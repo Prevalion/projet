@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build: ./backend
@@ -10,8 +8,12 @@ services:
     volumes:
       - ./backend:/app/backend
       - /app/backend/node_modules
-    env_file:
-      - ./backend/.env
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/proshop
+      - JWT_SECRET=abc123
+      - PAYPAL_CLIENT_ID=your_paypal_client_id
     depends_on:
       - mongo
     networks:

@@ -1,15 +1,14 @@
-import { PRODUCTS_URL } from '../constants.js';
-import { apiSlice } from './apiSlice.js';
+// Let's check how API requests are being made
+import { PRODUCTS_URL } from '../constants';
+import { apiSlice } from './apiSlice';
 
 export const productsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query({
-      query: ({ keyword, pageNumber }) => ({
+      query: () => ({
         url: PRODUCTS_URL,
-        params: { keyword, pageNumber },
       }),
       keepUnusedDataFor: 5,
-      providesTags: ['Products'],
     }),
     getProductDetails: builder.query({
       query: (productId) => ({

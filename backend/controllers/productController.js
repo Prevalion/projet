@@ -5,9 +5,12 @@ import Product from '../models/productModel.js';
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-  const pageSize = process.env.PAGINATION_LIMIT;
+  const pageSize = process.env.PAGINATION_LIMIT || 8;
   const page = Number(req.query.pageNumber) || 1;
-
+  
+  // Ensure page number is valid and positive
+  const validPage = page > 0 ? page : 1;
+  
   const keyword = req.query.keyword
     ? {
         name: {
@@ -18,11 +21,15 @@ const getProducts = asyncHandler(async (req, res) => {
     : {};
 
   const count = await Product.countDocuments({ ...keyword });
+  
+  // Calculate skip with validation to ensure it's never negative
+  const skip = (validPage - 1) * pageSize;
+  
   const products = await Product.find({ ...keyword })
-    .limit(pageSize)
-    .skip(pageSize * (page - 1));
+    .limit(Number(pageSize))
+    .skip(skip);
 
-  res.json({ products, page, pages: Math.ceil(count / pageSize) });
+  res.json({ products, page: validPage, pages: Math.ceil(count / pageSize) });
 });
 
 // @desc    Fetch single product

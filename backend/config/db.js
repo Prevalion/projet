@@ -1,15 +1,11 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-dotenv.config();
 
 const connectDB = async () => {
   try {
+    // Remove the auth object as it's already included in the MONGO_URI
     const conn = await mongoose.connect(process.env.MONGO_URI, {
-      auth: {
-        username: process.env.MONGO_USERNAME || 'root',
-        password: process.env.MONGO_PASSWORD || 'example'
-      },
-      authSource: 'admin'
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
@@ -17,4 +13,5 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
+
 export default connectDB;

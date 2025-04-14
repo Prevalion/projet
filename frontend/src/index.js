@@ -14,7 +14,6 @@ import theme from './theme';
 import store from './store';
 import App from './App';
 import reportWebVitals from './reportWebVitals.js';
-import {createBrowserRouter,createRoutesFromElements,Route,RouterProvider,} from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import AdminRoute from './components/AdminRoute.jsx';

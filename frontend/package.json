@@ -2,6 +2,10 @@
   "name": "frontend",
   "proxy": "http://localhost:5000",
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.19",
+    "@mui/material": "^5.14.19",
     "@paypal/react-paypal-js": "^8.8.3",
     "@reduxjs/toolkit": "^1.9.3",
     "axios": "^1.3.4",

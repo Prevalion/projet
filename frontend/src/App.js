@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { Container } from 'react-bootstrap';
+import { Container } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
@@ -27,7 +27,7 @@ const App = () => {
     <>
       <ToastContainer />
       <Header />
-      <main className='py-3'>
+      <main style={{ paddingTop: '24px', paddingBottom: '24px' }}>
         <Container>
           <Outlet />
         </Container>

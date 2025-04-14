@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
+import { TextField, Button, Typography, Box } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import FormContainer from '../components/FormContainer';
@@ -29,56 +29,67 @@ const ShippingScreen = () => {
   return (
     <FormContainer>
       <CheckoutSteps step1 step2 />
-      <h1>Shipping</h1>
-      <Form onSubmit={submitHandler}>
-        <Form.Group className='my-2' controlId='address'>
-          <Form.Label>Address</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder='Enter address'
-            value={address}
-            required
-            onChange={(e) => setAddress(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Shipping
+      </Typography>
+      <Box component="form" onSubmit={submitHandler}>
+        <TextField
+          fullWidth
+          margin="normal"
+          id="address"
+          label="Address"
+          variant="outlined"
+          placeholder="Enter address"
+          value={address}
+          required
+          onChange={(e) => setAddress(e.target.value)}
+        />
 
-        <Form.Group className='my-2' controlId='city'>
-          <Form.Label>City</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder='Enter city'
-            value={city}
-            required
-            onChange={(e) => setCity(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+        <TextField
+          fullWidth
+          margin="normal"
+          id="city"
+          label="City"
+          variant="outlined"
+          placeholder="Enter city"
+          value={city}
+          required
+          onChange={(e) => setCity(e.target.value)}
+        />
 
-        <Form.Group className='my-2' controlId='postalCode'>
-          <Form.Label>Postal Code</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder='Enter postal code'
-            value={postalCode}
-            required
-            onChange={(e) => setPostalCode(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+        <TextField
+          fullWidth
+          margin="normal"
+          id="postalCode"
+          label="Postal Code"
+          variant="outlined"
+          placeholder="Enter postal code"
+          value={postalCode}
+          required
+          onChange={(e) => setPostalCode(e.target.value)}
+        />
 
-        <Form.Group className='my-2' controlId='country'>
-          <Form.Label>Country</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder='Enter country'
-            value={country}
-            required
-            onChange={(e) => setCountry(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+        <TextField
+          fullWidth
+          margin="normal"
+          id="country"
+          label="Country"
+          variant="outlined"
+          placeholder="Enter country"
+          value={country}
+          required
+          onChange={(e) => setCountry(e.target.value)}
+        />
 
-        <Button type='submit' variant='primary'>
+        <Button 
+          type="submit" 
+          variant="contained" 
+          color="primary"
+          sx={{ mt: 3 }}
+        >
           Continue
         </Button>
-      </Form>
+      </Box>
     </FormContainer>
   );
 };

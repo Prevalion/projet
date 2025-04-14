@@ -1,13 +1,15 @@
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Grid, Box } from '@mui/material';
 
 const FormContainer = ({ children }) => {
   return (
     <Container>
-      <Row className='justify-content-md-center'>
-        <Col xs={12} md={6}>
-          {children}
-        </Col>
-      </Row>
+      <Grid container justifyContent="center">
+        <Grid item xs={12} md={6}>
+          <Box sx={{ mt: 2, mb: 4 }}>
+            {children}
+          </Box>
+        </Grid>
+      </Grid>
     </Container>
   );
 };

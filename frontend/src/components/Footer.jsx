@@ -1,18 +1,17 @@
-import { Container, Row, Col } from 'react-bootstrap';
+import { Box, Container, Typography } from '@mui/material';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer>
+    <Box component="footer" sx={{ py: 3, bgcolor: 'background.paper' }}>
       <Container>
-        <Row>
-          <Col className='text-center py-3'>
-            <p>ProShop &copy; {currentYear}</p>
-          </Col>
-        </Row>
+        <Typography variant="body2" align="center">
+          ProShop &copy; {currentYear}
+        </Typography>
       </Container>
-    </footer>
+    </Box>
   );
 };
+
 export default Footer;

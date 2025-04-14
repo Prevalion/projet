@@ -1,9 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './assets/styles/bootstrap.custom.css';
-import './assets/styles/index.css';
-// import 'bootstrap/dist/css/bootstrap.min.css';
-import App from './App.js';
+import { 
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route, 
+  RouterProvider 
+} from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { HelmetProvider } from 'react-helmet-async';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from './theme';
+import store from './store';
+import App from './App';
 import reportWebVitals from './reportWebVitals.js';
 import {createBrowserRouter,createRoutesFromElements,Route,RouterProvider,} from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
@@ -67,15 +76,17 @@ const router = createBrowserRouter(
 );
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
 root.render(
   <React.StrictMode>
-    <HelmetProvider>
-      <Provider store={store}>
-        <PayPalScriptProvider deferLoading={true}>
+    <Provider store={store}>
+      <HelmetProvider>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
           <RouterProvider router={router} />
-        </PayPalScriptProvider>
-      </Provider>
-    </HelmetProvider>
+        </ThemeProvider>
+      </HelmetProvider>
+    </Provider>
   </React.StrictMode>
 );
 

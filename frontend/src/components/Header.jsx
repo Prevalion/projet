@@ -1,5 +1,23 @@
-import { Navbar, Nav, Container, NavDropdown, Badge } from 'react-bootstrap';
-import { FaShoppingCart, FaUser } from 'react-icons/fa';
+import { useState } from 'react';
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Container, 
+  Box, 
+  IconButton, 
+  Menu, 
+  MenuItem, 
+  Badge, 
+  Button, 
+  Drawer, 
+  List, 
+  ListItem, 
+  ListItemText,
+  useMediaQuery,
+  useTheme
+} from '@mui/material';
+import { ShoppingCart, Person, Menu as MenuIcon } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLogoutMutation } from '../slices/usersApiSlice';
@@ -11,6 +29,12 @@ import { resetCart } from '../slices/cartSlice';
 const Header = () => {
   const { cartItems } = useSelector((state) => state.cart);
   const { userInfo } = useSelector((state) => state.auth);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const [anchorElUser, setAnchorElUser] = useState(null);
+  const [anchorElAdmin, setAnchorElAdmin] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -21,71 +45,224 @@ const Header = () => {
     try {
       await logoutApiCall().unwrap();
       dispatch(logout());
-      // NOTE: here we need to reset cart state for when a user logs out so the next
-      // user doesn't inherit the previous users cart and shipping
       dispatch(resetCart());
       navigate('/login');
+      handleCloseUserMenu();
     } catch (err) {
       console.error(err);
     }
   };
 
+  const handleOpenUserMenu = (event) => {
+    setAnchorElUser(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
+  };
+
+  const handleOpenAdminMenu = (event) => {
+    setAnchorElAdmin(event.currentTarget);
+  };
+
+  const handleCloseAdminMenu = () => {
+    setAnchorElAdmin(null);
+  };
+
+  const toggleDrawer = (open) => (event) => {
+    if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
+      return;
+    }
+    setDrawerOpen(open);
+  };
+
   return (
-    <header>
-      <Navbar bg='primary' variant='dark' expand='lg' collapseOnSelect>
-        <Container>
-          <Navbar.Brand as={Link} to='/'>
-            <img src={logo} alt='ProShop' />
-            ProShop
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls='basic-navbar-nav' />
-          <Navbar.Collapse id='basic-navbar-nav'>
-            <Nav className='ms-auto'>
+    <AppBar position="static" color="primary">
+      <Container>
+        <Toolbar disableGutters>
+          {isMobile && (
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              onClick={toggleDrawer(true)}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+          
+          <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'white' }}>
+            <img src={logo} alt="ProShop" style={{ height: 40, marginRight: 8 }} />
+            <Typography variant="h6" noWrap component="div">
+              ProShop
+            </Typography>
+          </Box>
+          
+          {!isMobile ? (
+            <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
               <SearchBox />
-              <Nav.Link as={Link} to='/cart'>
-                <FaShoppingCart /> Cart
+              
+              <Button 
+                component={Link} 
+                to="/cart" 
+                color="inherit" 
+                sx={{ ml: 2, display: 'flex', alignItems: 'center' }}
+              >
+                <ShoppingCart sx={{ mr: 0.5 }} />
+                Cart
                 {cartItems.length > 0 && (
-                  <Badge pill bg='success' style={{ marginLeft: '5px' }}>
-                    {cartItems.reduce((a, c) => a + c.qty, 0)}
-                  </Badge>
+                  <Badge 
+                    badgeContent={cartItems.reduce((a, c) => a + c.qty, 0)} 
+                    color="success" 
+                    sx={{ ml: 1 }}
+                  />
                 )}
-              </Nav.Link>
+              </Button>
+              
               {userInfo ? (
                 <>
-                  <NavDropdown title={userInfo.name} id='username'>
-                    <NavDropdown.Item as={Link} to='/profile'>
+                  <Button 
+                    color="inherit" 
+                    onClick={handleOpenUserMenu}
+                    sx={{ ml: 2 }}
+                  >
+                    {userInfo.name}
+                  </Button>
+                  <Menu
+                    anchorEl={anchorElUser}
+                    open={Boolean(anchorElUser)}
+                    onClose={handleCloseUserMenu}
+                    keepMounted
+                  >
+                    <MenuItem 
+                      component={Link} 
+                      to="/profile" 
+                      onClick={handleCloseUserMenu}
+                    >
                       Profile
-                    </NavDropdown.Item>
-                    <NavDropdown.Item onClick={logoutHandler}>
+                    </MenuItem>
+                    <MenuItem onClick={logoutHandler}>
                       Logout
-                    </NavDropdown.Item>
-                  </NavDropdown>
+                    </MenuItem>
+                  </Menu>
                 </>
               ) : (
-                <Nav.Link as={Link} to='/login'>
-                  <FaUser /> Sign In
-                </Nav.Link>
+                <Button 
+                  component={Link} 
+                  to="/login" 
+                  color="inherit"
+                  sx={{ ml: 2, display: 'flex', alignItems: 'center' }}
+                >
+                  <Person sx={{ mr: 0.5 }} />
+                  Sign In
+                </Button>
               )}
-
-              {/* Admin Links */}
+              
               {userInfo && userInfo.isAdmin && (
-                <NavDropdown title='Admin' id='adminmenu'>
-                  <NavDropdown.Item as={Link} to='/admin/productlist'>
-                    Products
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to='/admin/orderlist'>
-                    Orders
-                  </NavDropdown.Item>
-                  <NavDropdown.Item as={Link} to='/admin/userlist'>
-                    Users
-                  </NavDropdown.Item>
-                </NavDropdown>
+                <>
+                  <Button 
+                    color="inherit" 
+                    onClick={handleOpenAdminMenu}
+                    sx={{ ml: 2 }}
+                  >
+                    Admin
+                  </Button>
+                  <Menu
+                    anchorEl={anchorElAdmin}
+                    open={Boolean(anchorElAdmin)}
+                    onClose={handleCloseAdminMenu}
+                    keepMounted
+                  >
+                    <MenuItem 
+                      component={Link} 
+                      to="/admin/productlist" 
+                      onClick={handleCloseAdminMenu}
+                    >
+                      Products
+                    </MenuItem>
+                    <MenuItem 
+                      component={Link} 
+                      to="/admin/orderlist" 
+                      onClick={handleCloseAdminMenu}
+                    >
+                      Orders
+                    </MenuItem>
+                    <MenuItem 
+                      component={Link} 
+                      to="/admin/userlist" 
+                      onClick={handleCloseAdminMenu}
+                    >
+                      Users
+                    </MenuItem>
+                  </Menu>
+                </>
               )}
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-    </header>
+            </Box>
+          ) : (
+            <Drawer
+              anchor="left"
+              open={drawerOpen}
+              onClose={toggleDrawer(false)}
+            >
+              <Box
+                sx={{ width: 250 }}
+                role="presentation"
+                onClick={toggleDrawer(false)}
+                onKeyDown={toggleDrawer(false)}
+              >
+                <List>
+                  <ListItem button component={Link} to="/cart">
+                    <ShoppingCart sx={{ mr: 2 }} />
+                    <ListItemText primary="Cart" />
+                    {cartItems.length > 0 && (
+                      <Badge 
+                        badgeContent={cartItems.reduce((a, c) => a + c.qty, 0)} 
+                        color="success" 
+                      />
+                    )}
+                  </ListItem>
+                  
+                  {userInfo ? (
+                    <>
+                      <ListItem button component={Link} to="/profile">
+                        <ListItemText primary="Profile" />
+                      </ListItem>
+                      <ListItem button onClick={logoutHandler}>
+                        <ListItemText primary="Logout" />
+                      </ListItem>
+                    </>
+                  ) : (
+                    <ListItem button component={Link} to="/login">
+                      <Person sx={{ mr: 2 }} />
+                      <ListItemText primary="Sign In" />
+                    </ListItem>
+                  )}
+                  
+                  {userInfo && userInfo.isAdmin && (
+                    <>
+                      <ListItem>
+                        <ListItemText primary="ADMIN" sx={{ fontWeight: 'bold' }} />
+                      </ListItem>
+                      <ListItem button component={Link} to="/admin/productlist">
+                        <ListItemText primary="Products" />
+                      </ListItem>
+                      <ListItem button component={Link} to="/admin/orderlist">
+                        <ListItemText primary="Orders" />
+                      </ListItem>
+                      <ListItem button component={Link} to="/admin/userlist">
+                        <ListItemText primary="Users" />
+                      </ListItem>
+                    </>
+                  )}
+                </List>
+              </Box>
+            </Drawer>
+          )}
+        </Toolbar>
+      </Container>
+    </AppBar>
   );
 };
 

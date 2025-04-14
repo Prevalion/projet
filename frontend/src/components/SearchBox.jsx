@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { TextField, Button, Box } from '@mui/material';
+import { Search } from '@mui/icons-material';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const SearchBox = () => {
   const navigate = useNavigate();
   const { keyword: urlKeyword } = useParams();
 
-  // FIX: uncontrolled input - urlKeyword may be undefined
   const [keyword, setKeyword] = useState(urlKeyword || '');
 
   const submitHandler = (e) => {
@@ -21,19 +20,26 @@ const SearchBox = () => {
   };
 
   return (
-    <Form onSubmit={submitHandler} className='d-flex'>
-      <Form.Control
-        type='text'
-        name='q'
+    <Box component="form" onSubmit={submitHandler} sx={{ display: 'flex' }}>
+      <TextField
+        size="small"
+        name="q"
         onChange={(e) => setKeyword(e.target.value)}
         value={keyword}
-        placeholder='Search Products...'
-        className='mr-sm-2 ml-sm-5'
-      ></Form.Control>
-      <Button type='submit' variant='outline-success' className='p-2 mx-2'>
+        placeholder="Search Products..."
+        variant="outlined"
+        sx={{ mr: 1, bgcolor: 'background.paper' }}
+      />
+      <Button 
+        type="submit" 
+        variant="contained" 
+        color="secondary" 
+        size="small"
+        startIcon={<Search />}
+      >
         Search
       </Button>
-    </Form>
+    </Box>
   );
 };
 

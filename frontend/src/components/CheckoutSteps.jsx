@@ -1,50 +1,42 @@
-import React from 'react';
-import { Nav } from 'react-bootstrap';
+import { Stepper, Step, StepLabel, Paper, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 const CheckoutSteps = ({ step1, step2, step3, step4 }) => {
+  const steps = [
+    { label: 'Sign In', link: '/login', active: step1 },
+    { label: 'Shipping', link: '/shipping', active: step2 },
+    { label: 'Payment', link: '/payment', active: step3 },
+    { label: 'Place Order', link: '/placeorder', active: step4 }
+  ];
+
+  const activeStep = steps.filter(step => step.active).length - 1;
+
   return (
-    <Nav className='justify-content-center mb-4'>
-      <Nav.Item>
-        {step1 ? (
-          <Nav.Link as={Link} to='/login'>
-            Sign In
-          </Nav.Link>
-        ) : (
-          <Nav.Link disabled>Sign In</Nav.Link>
-        )}
-      </Nav.Item>
-
-      <Nav.Item>
-        {step2 ? (
-          <Nav.Link as={Link} to='/shipping'>
-            Shipping
-          </Nav.Link>
-        ) : (
-          <Nav.Link disabled>Shipping</Nav.Link>
-        )}
-      </Nav.Item>
-
-      <Nav.Item>
-        {step3 ? (
-          <Nav.Link as={Link} to='/payment'>
-            Payment
-          </Nav.Link>
-        ) : (
-          <Nav.Link disabled>Payment</Nav.Link>
-        )}
-      </Nav.Item>
-
-      <Nav.Item>
-        {step4 ? (
-          <Nav.Link as={Link} to='/placeorder'>
-            Place Order
-          </Nav.Link>
-        ) : (
-          <Nav.Link disabled>Place Order</Nav.Link>
-        )}
-      </Nav.Item>
-    </Nav>
+    <Box sx={{ mb: 4 }}>
+      <Paper elevation={0} sx={{ p: 2 }}>
+        <Stepper activeStep={activeStep} alternativeLabel>
+          {steps.map((step, index) => (
+            <Step key={step.label}>
+              <StepLabel>
+                {step.active ? (
+                  <Link 
+                    to={step.link} 
+                    style={{ 
+                      color: index <= activeStep ? 'inherit' : '#bdbdbd',
+                      textDecoration: 'none' 
+                    }}
+                  >
+                    {step.label}
+                  </Link>
+                ) : (
+                  <span style={{ color: '#bdbdbd' }}>{step.label}</span>
+                )}
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Paper>
+    </Box>
   );
 };
 

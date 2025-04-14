@@ -7,14 +7,12 @@ import {
   RouterProvider 
 } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import { HelmetProvider } from 'react-helmet-async';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme';
 import store from './store';
 import App from './App';
 import reportWebVitals from './reportWebVitals.js';
-import {createBrowserRouter,createRoutesFromElements,Route,RouterProvider,} from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import PrivateRoute from './components/PrivateRoute.jsx';
 import AdminRoute from './components/AdminRoute.jsx';
@@ -35,7 +33,6 @@ import UserListScreen from './screens/admin/UserListScreen.jsx';
 import UserEditScreen from './screens/admin/UserEditScreen.jsx';
 import store from './store.js';
 import { Provider } from 'react-redux';
-import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 
 const router = createBrowserRouter(
   createRoutesFromElements(

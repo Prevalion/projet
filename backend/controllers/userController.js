@@ -12,7 +12,7 @@ const authUser = asyncHandler(async (req, res) => {
 
   if (user && (await user.matchPassword(password))) {
     generateToken(res, user._id);
-
+    
     res.json({
       _id: user._id,
       name: user.name,
@@ -24,7 +24,7 @@ const authUser = asyncHandler(async (req, res) => {
     throw new Error('Invalid email or password');
   }
 });
-
+ 
 // @desc    Register a new user
 // @route   POST /api/users
 // @access  Public

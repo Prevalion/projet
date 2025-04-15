@@ -14,7 +14,17 @@ const errorHandler = (err, req, res, next) => {
     statusCode = 404;
   }
 
-  console.error('Error:', err); // Add detailed logging
+  // Enhanced error logging
+  console.error('Error Details:', {
+    message: err.message,
+    name: err.name,
+    stack: err.stack,
+    statusCode,
+    path: req.path,
+    method: req.method,
+    body: req.body ? JSON.stringify(req.body).substring(0, 200) : 'No body',
+    headers: req.headers ? JSON.stringify(req.headers).substring(0, 200) : 'No headers'
+  });
 
   res.status(statusCode).json({
     message,

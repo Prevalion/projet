@@ -1,4 +1,4 @@
-import { Row, Col } from 'react-bootstrap';
+import { Grid, Button, Typography, Box } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useGetProductsQuery } from '../slices/productsApiSlice';
 import { Link } from 'react-router-dom';
@@ -22,9 +22,15 @@ const HomeScreen = () => {
       {!keyword ? (
         <ProductCarousel />
       ) : (
-        <Link to='/' className='btn btn-light mb-4'>
+        <Button 
+          component={Link} 
+          to='/' 
+          variant="outlined" 
+          color="primary" 
+          sx={{ mb: 4 }}
+        >
           Go Back
-        </Link>
+        </Button>
       )}
       {isLoading ? (
         <Loader />
@@ -35,14 +41,16 @@ const HomeScreen = () => {
       ) : (
         <>
           <Meta />
-          <h1>Latest Products</h1>
-          <Row>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Latest Products
+          </Typography>
+          <Grid container spacing={3}>
             {data.products.map((product) => (
-              <Col key={product._id} sm={12} md={6} lg={4} xl={3}>
+              <Grid item key={product._id} xs={12} sm={6} md={4} lg={3}>
                 <Product product={product} />
-              </Col>
+              </Grid>
             ))}
-          </Row>
+          </Grid>
           <Paginate
             pages={data.pages}
             page={data.page}

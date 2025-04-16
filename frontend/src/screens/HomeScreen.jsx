@@ -19,8 +19,21 @@ const HomeScreen = () => {
 
   return (
     <>
+      <Meta />
+      {/* Part 2: Horizontal Auto-Advancing Product Carousel */}
       {!keyword ? (
-        <ProductCarousel />
+        <Box sx={{ mb: 4 }}>
+          {/* Pass products to ProductCarousel for auto-sliding */}
+          {isLoading ? (
+            <Loader />
+          ) : error ? (
+            <Message variant='danger'>
+              {error?.data?.message || error.error}
+            </Message>
+          ) : (
+            <ProductCarousel products={data.products} />
+          )}
+        </Box>
       ) : (
         <Button 
           component={Link} 
@@ -32,6 +45,8 @@ const HomeScreen = () => {
           Go Back
         </Button>
       )}
+
+      {/* Part 3: Latest Products Grid */}
       {isLoading ? (
         <Loader />
       ) : error ? (
@@ -40,22 +55,38 @@ const HomeScreen = () => {
         </Message>
       ) : (
         <>
-          <Meta />
-          <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4, mb: 3 }}>
-            Latest Products
-          </Typography>
-          <Grid container spacing={2}>
-            {data.products.map((product) => (
-              <Grid item key={product._id} xs={12} sm={6} md={4} lg={3}>
-                <Product product={product} />
+          <Box sx={{ bgcolor: '#f5f5f5', py: 3 }}>
+            <Container>
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                gutterBottom 
+                sx={{ 
+                  mb: 3, 
+                  color: '#4a4a4a',
+                  fontWeight: 500
+                }}
+              >
+                Latest Products
+              </Typography>
+              
+              <Grid container spacing={3}>
+                {data.products.map((product) => (
+                  <Grid item key={product._id} xs={12} sm={6} md={4} lg={3}>
+                    <Product product={product} />
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
-          <Paginate
-            pages={data.pages}
-            page={data.page}
-            keyword={keyword ? keyword : ''}
-          />
+              
+              <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                <Paginate
+                  pages={data.pages}
+                  page={data.page}
+                  keyword={keyword ? keyword : ''}
+                />
+              </Box>
+            </Container>
+          </Box>
         </>
       )}
     </>

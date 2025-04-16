@@ -1,69 +1,92 @@
-import { Link } from 'react-router-dom';
-import { Box, Typography, Paper } from '@mui/material';
-import { Carousel } from 'react-bootstrap';
+import React from 'react';
+import Carousel from 'react-material-ui-carousel'; // Import the carousel component
+import { Paper, Box, Typography, Link as MuiLink } from '@mui/material'; // Import Material UI components
+import { Link as RouterLink } from 'react-router-dom'; // Use RouterLink for navigation
+import Loader from './Loader';
 import Message from './Message';
-import { useGetTopProductsQuery } from '../slices/productsApiSlice';
-import { useEffect, useState } from 'react';
 
-const ProductCarousel = () => {
-  const { data: products, isLoading, error } = useGetTopProductsQuery();
-  const [index, setIndex] = useState(0);
-  
-  const handleSelect = (selectedIndex) => {
-    setIndex(selectedIndex);
-  };
+// Assuming products, isLoading, and error are passed as props
+const ProductCarousel = ({ products, isLoading, error }) => {
 
-  return isLoading ? null : error ? (
-    <Message variant='danger'>{error?.data?.message || error.error}</Message>
-  ) : (
-    <Box sx={{ mb: 4, overflow: 'hidden', width: '100%', display: 'flex' }}>
-      <Carousel 
-        activeIndex={index}
-        onSelect={handleSelect}
-        interval={3000}
-        controls={true}
-        indicators={true}
-        pause={false}
-        className='bg-primary' 
-        style={{ width: '100%' }}
-      >
-        {products.map((product) => (
-          <Carousel.Item key={product._id}>
-            <Box sx={{ display: 'flex', height: '300px' }}>
-              <Box sx={{ width: '50%', backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Link to={`/product/${product._id}`} style={{ textDecoration: 'none', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Box 
-                    component="img"
-                    src={product.image}
-                    alt={product.name}
-                    sx={{
-                      maxWidth: '100%',
-                      maxHeight: '100%',
-                      objectFit: 'contain',
-                      padding: '20px'
-                    }}
-                  />
-                </Link>
-              </Box>
-              <Box sx={{ width: '50%', backgroundColor: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Box sx={{ p: 4, width: '100%', textAlign: 'center' }}>
-                  <Typography 
-                    variant="h4" 
-                    sx={{ 
-                      color: 'white', 
-                      mb: 2,
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
-                    }}
-                  >
-                    {product.name} (${product.price})
-                  </Typography>
-                </Box>
-              </Box>
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (error) {
+    return <Message variant='danger'>{error?.data?.message || error.error}</Message>;
+  }
+
+  // Select products for the carousel (e.g., first 5 or top-rated)
+  const carouselProducts = products ? products.slice(0, 5) : [];
+
+  return (
+    <Carousel
+      indicators={true} // Show indicators (dots)
+      navButtonsAlwaysVisible={false} // Show nav buttons (arrows) only on hover or focus
+      animation="slide" // Animation type: "fade" or "slide"
+      duration={500} // Animation duration
+      interval={4000} // Auto-play interval (4 seconds)
+      autoPlay={true} // Enable auto-play
+      stopAutoPlayOnHover={true} // Pause on hover
+      indicatorIconButtonProps={{ // Style for indicator buttons
+          style: {
+              padding: '5px', // Adjust padding
+              color: 'lightgrey' // Indicator color
+          }
+      }}
+      activeIndicatorIconButtonProps={{ // Style for active indicator button
+          style: {
+              color: '#494949' // Active indicator color
+          }
+      }}
+      indicatorContainerProps={{ // Style for the container holding indicators
+          style: {
+              marginTop: '-20px', // Adjust position relative to the carousel items
+              textAlign: 'center', // Center indicators
+              zIndex: 1 // Ensure indicators are above image overlay if needed
+          }
+      }}
+      navButtonsProps={{ // Style for nav buttons (arrows)
+          style: {
+              backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent background
+              borderRadius: 0 // Square buttons
+          }
+      }}
+    >
+      {carouselProducts.map((product) => (
+        <Paper key={product._id} elevation={0} sx={{ position: 'relative', backgroundColor: 'transparent' }}>
+          <MuiLink component={RouterLink} to={`/product/${product._id}`} underline="none">
+            <Box
+              component="img"
+              sx={{
+                width: '100%',
+                height: { xs: 250, sm: 350, md: 450 }, // Responsive height
+                objectFit: 'cover',
+                display: 'block',
+              }}
+              src={product.image}
+              alt={product.name}
+            />
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: '100%',
+                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                color: 'white',
+                padding: { xs: '8px 15px', md: '10px 20px' }, // Responsive padding
+                textAlign: 'center',
+              }}
+            >
+              <Typography variant="h6" component="div" sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                {product.name} (${product.price})
+              </Typography>
             </Box>
-          </Carousel.Item>
-        ))}
-      </Carousel>
-    </Box>
+          </MuiLink>
+        </Paper>
+      ))}
+    </Carousel>
   );
 };
 

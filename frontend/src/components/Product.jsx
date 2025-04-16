@@ -9,11 +9,12 @@ const Product = ({ product }) => {
       display: 'flex', 
       flexDirection: 'column',
       transition: '0.3s',
-      boxShadow: '0 8px 40px -12px rgba(0,0,0,0.3)',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
       '&:hover': {
-        boxShadow: '0 16px 70px -12.125px rgba(0,0,0,0.3)'
+        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
       },
-      my: 2
+      borderRadius: '8px',
+      overflow: 'hidden'
     }}>
       <Link to={`/product/${product._id}`} style={{ textDecoration: 'none' }}>
         <CardMedia
@@ -21,7 +22,7 @@ const Product = ({ product }) => {
           image={product.image}
           alt={product.name}
           sx={{ 
-            height: 200,
+            height: 180,
             objectFit: 'contain',
             padding: '10px',
             backgroundColor: '#f8f9fa'
@@ -29,19 +30,28 @@ const Product = ({ product }) => {
         />
       </Link>
 
-      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <CardContent sx={{ 
+        flexGrow: 1, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'space-between',
+        p: 2 
+      }}>
         <Link to={`/product/${product._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <Typography 
-            variant="h6" 
+            variant="subtitle1" 
             component="div" 
             className='product-title'
             sx={{ 
               fontWeight: 'bold',
               mb: 1,
-              height: '2.5em',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              lineHeight: '1.2em',
+              height: '2.4em'
             }}
           >
             {product.name}

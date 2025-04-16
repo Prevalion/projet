@@ -1,4 +1,4 @@
-import { Grid, Button, Typography, Box } from '@mui/material';
+import { Grid, Button, Typography, Box, Container } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { useGetProductsQuery } from '../slices/productsApiSlice';
 import { Link } from 'react-router-dom';
@@ -41,10 +41,10 @@ const HomeScreen = () => {
       ) : (
         <>
           <Meta />
-          <Typography variant="h4" component="h1" gutterBottom>
+          <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 4, mb: 3 }}>
             Latest Products
           </Typography>
-          <Grid container spacing={3}>
+          <Grid container spacing={2}>
             {data.products.map((product) => (
               <Grid item key={product._id} xs={12} sm={6} md={4} lg={3}>
                 <Product product={product} />

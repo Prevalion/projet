@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box } from '@mui/material';
+import { Button, Box, InputBase } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -20,22 +20,28 @@ const SearchBox = () => {
   };
 
   return (
-    <Box component="form" onSubmit={submitHandler} sx={{ display: 'flex' }}>
-      <TextField
-        size="small"
+    <Box component="form" onSubmit={submitHandler} sx={{ 
+      display: 'flex',
+      alignItems: 'center',
+      backgroundColor: 'white',
+      borderRadius: '4px',
+      padding: '0 10px',
+      width: '300px'
+    }}>
+      <InputBase
         name="q"
         onChange={(e) => setKeyword(e.target.value)}
         value={keyword}
         placeholder="Search Products..."
-        variant="outlined"
-        sx={{ mr: 1, bgcolor: 'background.paper' }}
+        sx={{ ml: 1, flex: 1, color: 'black' }}
+        inputProps={{ 'aria-label': 'search products' }}
       />
       <Button 
         type="submit" 
         variant="contained" 
         color="secondary" 
         size="small"
-        startIcon={<Search />}
+        sx={{ height: '32px', minWidth: '60px' }}
       >
         Search
       </Button>

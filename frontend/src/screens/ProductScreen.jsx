@@ -1,16 +1,20 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Row,
-  Col,
-  Image,
-  ListGroup,
+  Box,
+  Grid,
+  Typography,
+  List,
+  ListItem,
   Card,
+  CardContent,
   Button,
-  Form,
-} from 'react-bootstrap';
+  TextField,
+  MenuItem,
+  Divider,
+  Paper
+} from '@mui/material';
 import { toast } from 'react-toastify';
 import {
   useGetProductDetailsQuery,
@@ -24,18 +28,12 @@ import { addToCart } from '../slices/cartSlice';
 
 const ProductScreen = () => {
   const { id: productId } = useParams();
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [qty, setQty] = useState(1);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
-
-  const addToCartHandler = () => {
-    dispatch(addToCart({ ...product, qty }));
-    navigate('/cart');
-  };
 
   const {
     data: product,
@@ -49,13 +47,17 @@ const ProductScreen = () => {
   const [createReview, { isLoading: loadingProductReview }] =
     useCreateReviewMutation();
 
+  const addToCartHandler = () => {
+    dispatch(addToCart({ ...product, qty }));
+    navigate('/cart');
+  };
+
   const submitHandler = async (e) => {
     e.preventDefault();
-
     try {
       await createReview({
         productId,
-        rating,
+        rating: Number(rating),
         comment,
       }).unwrap();
       refetch();
@@ -67,160 +69,220 @@ const ProductScreen = () => {
 
   return (
     <>
-      <Link className='btn btn-light my-3' to='/'>
+      <Button 
+        component={Link} 
+        to='/' 
+        variant="outlined" 
+        sx={{ my: 3 }}
+      >
         Go Back
-      </Link>
+      </Button>
+
       {isLoading ? (
         <Loader />
       ) : error ? (
-        <Message variant='danger'>
+        <Message severity='error'>
           {error?.data?.message || error.error}
         </Message>
       ) : (
         <>
           <Meta title={product.name} description={product.description} />
-          <Row>
-            <Col md={6}>
-              <Image src={product.image} alt={product.name} fluid />
-            </Col>
-            <Col md={3}>
-              <ListGroup variant='flush'>
-                <ListGroup.Item>
-                  <h3>{product.name}</h3>
-                </ListGroup.Item>
-                <ListGroup.Item>
+          <Grid container spacing={4}>
+            <Grid item md={6}>
+              <Box
+                component="img"
+                src={product.image}
+                alt={product.name}
+                sx={{
+                  width: '100%',
+                  maxHeight: '400px',
+                  objectFit: 'contain',
+                  background: '#fafafa',
+                  border: '1px solid #eee',
+                  borderRadius: '8px',
+                }}
+              />
+            </Grid>
+
+            <Grid item md={3}>
+              <List sx={{ width: '100%' }}>
+                <ListItem>
+                  <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.6rem' }}>
+                    {product.name}
+                  </Typography>
+                </ListItem>
+                <Divider />
+                <ListItem>
                   <Rating
                     value={product.rating}
                     text={`${product.numReviews} reviews`}
                   />
-                </ListGroup.Item>
-                <ListGroup.Item>Price: ${product.price}</ListGroup.Item>
-                <ListGroup.Item>
-                  Description: {product.description}
-                </ListGroup.Item>
-              </ListGroup>
-            </Col>
-            <Col md={3}>
-              <Card>
-                <ListGroup variant='flush'>
-                  <ListGroup.Item>
-                    <Row>
-                      <Col>Price:</Col>
-                      <Col>
-                        <strong>${product.price}</strong>
-                      </Col>
-                    </Row>
-                  </ListGroup.Item>
-                  <ListGroup.Item>
-                    <Row>
-                      <Col>Status:</Col>
-                      <Col>
-                        {product.countInStock > 0 ? 'In Stock' : 'Out Of Stock'}
-                      </Col>
-                    </Row>
-                  </ListGroup.Item>
+                </ListItem>
+                <Divider />
+                <ListItem>
+                  <Typography sx={{ fontWeight: 500 }}>
+                    Price: ${product.price}
+                  </Typography>
+                </ListItem>
+                <Divider />
+                <ListItem>
+                  <Typography sx={{ color: '#555' }}>
+                    {product.description}
+                  </Typography>
+                </ListItem>
+              </List>
+            </Grid>
 
-                  {/* Qty Select */}
-                  {product.countInStock > 0 && (
-                    <ListGroup.Item>
-                      <Row>
-                        <Col>Qty</Col>
-                        <Col>
-                          <Form.Control
-                            as='select'
-                            value={qty}
-                            onChange={(e) => setQty(Number(e.target.value))}
-                          >
-                            {[...Array(product.countInStock).keys()].map(
-                              (x) => (
-                                <option key={x + 1} value={x + 1}>
+            <Grid item md={3}>
+              <Card sx={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                <CardContent>
+                  <List>
+                    <ListItem>
+                      <Grid container>
+                        <Grid item xs={6}>
+                          <Typography>Price:</Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography sx={{ fontWeight: 'bold' }}>${product.price}</Typography>
+                        </Grid>
+                      </Grid>
+                    </ListItem>
+                    <Divider />
+
+                    <ListItem>
+                      <Grid container>
+                        <Grid item xs={6}>
+                          <Typography>Status:</Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography>
+                            {product.countInStock > 0 ? 'In Stock' : 'Out Of Stock'}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+                    </ListItem>
+                    <Divider />
+
+                    {product.countInStock > 0 && (
+                      <ListItem>
+                        <Grid container alignItems="center">
+                          <Grid item xs={6}>
+                            <Typography>Qty</Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <TextField
+                              select
+                              value={qty}
+                              onChange={(e) => setQty(Number(e.target.value))}
+                              size="small"
+                              sx={{ minWidth: '60px' }}
+                            >
+                              {[...Array(product.countInStock).keys()].map((x) => (
+                                <MenuItem key={x + 1} value={x + 1}>
                                   {x + 1}
-                                </option>
-                              )
-                            )}
-                          </Form.Control>
-                        </Col>
-                      </Row>
-                    </ListGroup.Item>
-                  )}
+                                </MenuItem>
+                              ))}
+                            </TextField>
+                          </Grid>
+                        </Grid>
+                      </ListItem>
+                    )}
+                    <Divider />
 
-                  <ListGroup.Item>
-                    <Button
-                      className='btn-block'
-                      type='button'
-                      disabled={product.countInStock === 0}
-                      onClick={addToCartHandler}
-                    >
-                      Add To Cart
-                    </Button>
-                  </ListGroup.Item>
-                </ListGroup>
+                    <ListItem>
+                      <Button
+                        onClick={addToCartHandler}
+                        variant="contained"
+                        fullWidth
+                        disabled={product.countInStock === 0}
+                        sx={{ padding: '10px 0', fontWeight: 500 }}
+                      >
+                        Add To Cart
+                      </Button>
+                    </ListItem>
+                  </List>
+                </CardContent>
               </Card>
-            </Col>
-          </Row>
-          <Row className='review'>
-            <Col md={6}>
-              <h2>Reviews</h2>
-              {product.reviews.length === 0 && <Message>No Reviews</Message>}
-              <ListGroup variant='flush'>
-                {product.reviews.map((review) => (
-                  <ListGroup.Item key={review._id}>
-                    <strong>{review.name}</strong>
-                    <Rating value={review.rating} />
-                    <p>{review.createdAt.substring(0, 10)}</p>
-                    <p>{review.comment}</p>
-                  </ListGroup.Item>
-                ))}
-                <ListGroup.Item>
-                  <h2>Write a Customer Review</h2>
+            </Grid>
+          </Grid>
 
+          <Grid container sx={{ mt: 4 }}>
+            <Grid item md={6}>
+              <Typography variant="h5" gutterBottom>Reviews</Typography>
+              {product.reviews.length === 0 && <Message>No Reviews</Message>}
+
+              <List>
+                {product.reviews.map((review) => (
+                  <ListItem key={review._id} sx={{ display: 'block' }}>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                      {review.name}
+                    </Typography>
+                    <Rating value={review.rating} />
+                    <Typography variant="body2" sx={{ my: 1 }}>
+                      {review.createdAt.substring(0, 10)}
+                    </Typography>
+                    <Typography variant="body1">
+                      {review.comment}
+                    </Typography>
+                    <Divider sx={{ my: 2 }} />
+                  </ListItem>
+                ))}
+
+                <ListItem sx={{ display: 'block' }}>
+                  <Typography variant="h6" gutterBottom>Write a Customer Review</Typography>
                   {loadingProductReview && <Loader />}
 
                   {userInfo ? (
-                    <Form onSubmit={submitHandler}>
-                      <Form.Group className='my-2' controlId='rating'>
-                        <Form.Label>Rating</Form.Label>
-                        <Form.Control
-                          as='select'
+                    <Box component="form" onSubmit={submitHandler}>
+                      <Box sx={{ my: 2 }}>
+                        <Typography variant="subtitle1">Rating</Typography>
+                        <TextField
+                          select
+                          fullWidth
                           required
                           value={rating}
                           onChange={(e) => setRating(e.target.value)}
+                          size="small"
                         >
-                          <option value=''>Select...</option>
-                          <option value='1'>1 - Poor</option>
-                          <option value='2'>2 - Fair</option>
-                          <option value='3'>3 - Good</option>
-                          <option value='4'>4 - Very Good</option>
-                          <option value='5'>5 - Excellent</option>
-                        </Form.Control>
-                      </Form.Group>
-                      <Form.Group className='my-2' controlId='comment'>
-                        <Form.Label>Comment</Form.Label>
-                        <Form.Control
-                          as='textarea'
-                          row='3'
+                          <MenuItem value="">Select...</MenuItem>
+                          <MenuItem value="1">1 - Poor</MenuItem>
+                          <MenuItem value="2">2 - Fair</MenuItem>
+                          <MenuItem value="3">3 - Good</MenuItem>
+                          <MenuItem value="4">4 - Very Good</MenuItem>
+                          <MenuItem value="5">5 - Excellent</MenuItem>
+                        </TextField>
+                      </Box>
+
+                      <Box sx={{ my: 2 }}>
+                        <Typography variant="subtitle1">Comment</Typography>
+                        <TextField
+                          multiline
+                          rows={3}
+                          fullWidth
                           required
                           value={comment}
                           onChange={(e) => setComment(e.target.value)}
-                        ></Form.Control>
-                      </Form.Group>
+                        />
+                      </Box>
+
                       <Button
                         disabled={loadingProductReview}
-                        type='submit'
-                        variant='primary'
+                        type="submit"
+                        variant="contained"
+                        color="primary"
                       >
                         Submit
                       </Button>
-                    </Form>
+                    </Box>
                   ) : (
                     <Message>
                       Please <Link to='/login'>sign in</Link> to write a review
                     </Message>
                   )}
-                </ListGroup.Item>
-              </ListGroup>
-            </Col>
-          </Row>
+                </ListItem>
+              </List>
+            </Grid>
+          </Grid>
         </>
       )}
     </>

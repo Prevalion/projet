@@ -15,7 +15,8 @@ import {
   ListItem, 
   ListItemText,
   useMediaQuery,
-  useTheme
+  useTheme,
+  InputBase
 } from '@mui/material';
 import { ShoppingCart, Person, Menu as MenuIcon } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
@@ -79,7 +80,7 @@ const Header = () => {
   return (
     <AppBar position="static" color="primary">
       <Container>
-        <Toolbar disableGutters>
+        <Toolbar disableGutters sx={{ display: 'flex', justifyContent: 'space-between' }}>
           {isMobile && (
             <IconButton
               size="large"
@@ -102,24 +103,37 @@ const Header = () => {
           
           {!isMobile ? (
             <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              <SearchBox />
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                backgroundColor: 'white', 
+                borderRadius: '4px',
+                padding: '0 10px',
+                width: '300px'
+              }}>
+                <InputBase
+                  placeholder="Search Products..."
+                  sx={{ ml: 1, flex: 1, color: 'black' }}
+                  inputProps={{ 'aria-label': 'search products' }}
+                />
+                <Button 
+                  variant="contained" 
+                  color="secondary" 
+                  size="small"
+                  sx={{ height: '32px', minWidth: '60px' }}
+                >
+                  Search
+                </Button>
+              </Box>
               
-              <Button 
-                component={Link} 
-                to="/cart" 
-                color="inherit" 
-                sx={{ ml: 2, display: 'flex', alignItems: 'center' }}
-              >
-                <ShoppingCart sx={{ mr: 0.5 }} />
-                Cart
-                {cartItems.length > 0 && (
-                  <Badge 
-                    badgeContent={cartItems.reduce((a, c) => a + c.qty, 0)} 
-                    color="success" 
-                    sx={{ ml: 1 }}
-                  />
-                )}
-              </Button>
+              <Box component={Link} to="/cart" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'white', ml: 2 }}>
+                <Badge badgeContent={cartItems.reduce((a, c) => a + c.qty, 0)} color="error">
+                  <ShoppingCart />
+                </Badge>
+                <Typography variant="body2" sx={{ ml: 1 }}>
+                  {userInfo ? userInfo.name : 'Cart'} ▼
+                </Typography>
+              </Box>
               
               {userInfo ? (
                 <>

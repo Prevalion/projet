@@ -29,10 +29,10 @@ const ShippingScreen = () => {
   return (
     <FormContainer>
       <CheckoutSteps step1 step2 />
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Typography variant="h4" component="h1" gutterBottom style={{ fontWeight: 600, marginBottom: '1.5rem' }}>
         Shipping
       </Typography>
-      <Box component="form" onSubmit={submitHandler}>
+      <Box component="form" onSubmit={submitHandler} sx={{ maxWidth: 500, mx: 'auto', background: '#fff', p: 3, borderRadius: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
         <TextField
           fullWidth
           margin="normal"
@@ -81,12 +81,7 @@ const ShippingScreen = () => {
           onChange={(e) => setCountry(e.target.value)}
         />
 
-        <Button 
-          type="submit" 
-          variant="contained" 
-          color="primary"
-          sx={{ mt: 3 }}
-        >
+        <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2, py: 1.5, fontWeight: 500 }}>
           Continue
         </Button>
       </Box>

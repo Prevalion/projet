@@ -10,6 +10,7 @@ import {
   RadioGroup, // Replaces Form.Group for radio buttons
   FormControlLabel, // Replaces Form.Check
   Radio, // Replaces Form.Check type='radio'
+  TextField, // Added for Credit Card fields
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,13 +30,27 @@ const PaymentScreen = () => {
   }, [navigate, shippingAddress]);
 
   const [paymentMethod, setPaymentMethod] = useState('PayPal');
+  // Add state for credit card details
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [cvc, setCvc] = useState('');
 
   const dispatch = useDispatch();
 
   const submitHandler = (e) => {
     e.preventDefault();
-    dispatch(savePaymentMethod(paymentMethod));
-    navigate('/placeorder');
+    if (paymentMethod === 'PayPal') {
+      dispatch(savePaymentMethod(paymentMethod));
+      navigate('/placeorder');
+    } else if (paymentMethod === 'CreditCard') {
+      // TODO: Implement actual credit card processing logic
+      // For now, just save the method and navigate
+      // In a real app, you'd validate and process the card details here
+      console.log('Credit Card Details:', { cardNumber, expiryDate, cvc });
+      dispatch(savePaymentMethod(paymentMethod));
+      // Potentially navigate to a different confirmation or processing step
+      navigate('/placeorder'); // Or a dedicated credit card processing route
+    }
   };
 
   return (
@@ -58,18 +73,64 @@ const PaymentScreen = () => {
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value)}
           >
-            {/* Replaced Form.Check with FormControlLabel and Radio */}
+            {/* Changed label from 'PayPal or Credit Card' to 'PayPal' */}
             <FormControlLabel
               value="PayPal"
               control={<Radio />}
-              label="PayPal or Credit Card"
+              label="PayPal"
             />
-            {/* Add more payment methods here if needed */}
+            {/* Added new radio button for Credit Card */}
+            <FormControlLabel
+              value="CreditCard"
+              control={<Radio />}
+              label="Credit Card"
+            />
             {/* <FormControlLabel value="Stripe" control={<Radio />} label="Stripe" /> */}
           </RadioGroup>
         </FormControl>
 
-        {/* Replaced react-bootstrap Button with MUI Button */}
+        {/* Conditionally render Credit Card fields */}
+        {paymentMethod === 'CreditCard' && (
+          <Box sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              margin="normal"
+              id="cardNumber"
+              label="Card Number"
+              variant="outlined"
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value)}
+              required
+              // Add input props for formatting/validation if needed
+            />
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                margin="normal"
+                id="expiryDate"
+                label="Expiry Date (MM/YY)"
+                variant="outlined"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
+                required
+                sx={{ flexGrow: 1 }}
+                // Add input props for formatting/validation if needed
+              />
+              <TextField
+                margin="normal"
+                id="cvc"
+                label="CVC"
+                variant="outlined"
+                value={cvc}
+                onChange={(e) => setCvc(e.target.value)}
+                required
+                sx={{ width: '100px' }} // Adjust width as needed
+                // Add input props for formatting/validation if needed
+              />
+            </Box>
+          </Box>
+        )}
+
+        {/* Button text and behavior might change based on selection, but for now, it submits for both */}
         <Button
           type="submit"
           variant="contained"
@@ -77,6 +138,7 @@ const PaymentScreen = () => {
           fullWidth
           sx={{ mt: 3, py: 1.5, fontWeight: 500 }}
         >
+          {/* Change button text based on method or keep generic */}
           Continue
         </Button>
       </Box>

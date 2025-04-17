@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom'; // Renamed Link
 import { toast } from 'react-toastify';
+import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js'; // Added PayPal imports
 // Removed react-bootstrap imports: Button, Row, Col, ListGroup, Image, Card
 // import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap';
 import {
@@ -21,7 +22,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import Message from '../components/Message'; // Keep or replace with MUI Alert
 import CheckoutSteps from '../components/CheckoutSteps';
 import Loader from '../components/Loader';
-import { useCreateOrderMutation } from '../slices/ordersApiSlice';
+// Updated imports for order API slice
+import {
+  useCreateOrderMutation,
+  usePayOrderMutation, // Added payOrder mutation
+  useGetPaypalClientIdQuery, // Corrected PayPal client ID query import
+} from '../slices/ordersApiSlice';
 import { clearCartItems } from '../slices/cartSlice';
 
 const PlaceOrderScreen = () => {
@@ -30,7 +36,29 @@ const PlaceOrderScreen = () => {
 
   const cart = useSelector((state) => state.cart);
 
-  const [createOrder, { isLoading, error }] = useCreateOrderMutation();
+  const [createOrder, { isLoading: loadingCreateOrder, error: createOrderError }] = useCreateOrderMutation(); // Renamed isLoading and error
+  const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation(); // Added payOrder hook
+  const { data: paypal, isLoading: loadingPayPal, error: errorPayPal } = useGetPaypalClientIdQuery(); // Corrected PayPal client ID hook call
+
+  const [{ isPending }, paypalDispatch] = usePayPalScriptReducer(); // Added PayPal script reducer
+
+  useEffect(() => {
+    if (!errorPayPal && !loadingPayPal && paypal.clientId) {
+      const loadPaypalScript = async () => {
+        paypalDispatch({
+          type: 'resetOptions',
+          value: {
+            'client-id': paypal.clientId,
+            currency: 'USD',
+          },
+        });
+        paypalDispatch({ type: 'setLoadingStatus', value: 'pending' });
+      };
+      if (cart.paymentMethod === 'PayPal' && !window.paypal) {
+        loadPaypalScript();
+      }
+    }
+  }, [errorPayPal, loadingPayPal, paypal, paypalDispatch, cart.paymentMethod]);
 
   useEffect(() => {
     if (!cart.shippingAddress.address) {
@@ -41,32 +69,83 @@ const PlaceOrderScreen = () => {
   }, [cart.paymentMethod, cart.shippingAddress.address, navigate]);
 
   const placeOrderHandler = async () => {
-    try {
-      const res = await createOrder({
-        orderItems: cart.cartItems,
-        shippingAddress: cart.shippingAddress,
-        paymentMethod: cart.paymentMethod,
-        itemsPrice: cart.itemsPrice,
-        shippingPrice: cart.shippingPrice,
-        taxPrice: cart.taxPrice,
-        totalPrice: cart.totalPrice,
-      }).unwrap();
-      dispatch(clearCartItems());
-      navigate(`/order/${res._id}`);
-    } catch (err) {
-      // Use optional chaining for safer error access
-      toast.error(err?.data?.message || err?.error || 'An unexpected error occurred');
+    // This handler is now primarily for non-PayPal orders or as a fallback
+    // PayPal orders are initiated via the PayPalButtons component
+    if (cart.paymentMethod !== 'PayPal') {
+      try {
+        const res = await createOrder({
+          orderItems: cart.cartItems,
+          shippingAddress: cart.shippingAddress,
+          paymentMethod: cart.paymentMethod,
+          itemsPrice: cart.itemsPrice,
+          shippingPrice: cart.shippingPrice,
+          taxPrice: cart.taxPrice,
+          totalPrice: cart.totalPrice,
+        }).unwrap();
+        dispatch(clearCartItems());
+        navigate(`/order/${res._id}`);
+      } catch (err) {
+        toast.error(err?.data?.message || err?.error || 'An unexpected error occurred');
+      }
     }
   };
+
+  // --- PayPal Button Handlers ---
+  function onApprove(data, actions) {
+    return actions.order.capture().then(async function (details) {
+      try {
+        // First, create the order in our backend
+        const createdOrder = await createOrder({
+          orderItems: cart.cartItems,
+          shippingAddress: cart.shippingAddress,
+          paymentMethod: cart.paymentMethod,
+          itemsPrice: cart.itemsPrice,
+          shippingPrice: cart.shippingPrice,
+          taxPrice: cart.taxPrice,
+          totalPrice: cart.totalPrice,
+        }).unwrap();
+
+        // Then, mark the order as paid using the PayPal details
+        await payOrder({ orderId: createdOrder._id, details }).unwrap();
+        dispatch(clearCartItems());
+        navigate(`/order/${createdOrder._id}`);
+        toast.success('Order placed and payment successful!');
+      } catch (err) {
+        toast.error(err?.data?.message || err.error || 'Payment failed');
+      }
+    });
+  }
+
+  function onError(err) {
+    toast.error(err?.message || 'PayPal Checkout onError');
+  }
+
+  function createPayPalOrder(data, actions) {
+    // This function is called when the PayPal button is clicked
+    // It should return the order ID created on PayPal's side
+    // We create the order details here based on the cart
+    return actions.order
+      .create({
+        purchase_units: [
+          {
+            amount: {
+              currency_code: 'USD', // Ensure currency matches script options
+              value: cart.totalPrice,
+            },
+          },
+        ],
+      })
+      .then((orderID) => {
+        return orderID;
+      });
+  }
+  // --- End PayPal Button Handlers ---
 
   return (
     <>
       <CheckoutSteps step1 step2 step3 step4 />
-      {/* Replaced Row with Grid container */}
       <Grid container spacing={4} sx={{ mt: 2 }}>
-        {/* Replaced Col md={8} with Grid item */}
         <Grid item md={8}>
-          {/* Replaced ListGroup with List */}
           <List sx={{ width: '100%', '& .MuiListItem-root': { p: 0 } }}>
             {/* Shipping Section */}
             <ListItem sx={{ mb: 3 }}>
@@ -97,17 +176,13 @@ const PlaceOrderScreen = () => {
               <Paper elevation={1} sx={{ p: 3, width: '100%' }}>
                 <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 500 }}>Order Items</Typography>
                 {cart.cartItems.length === 0 ? (
-                  // Consider using MUI Alert
                   <Message>Your cart is empty</Message>
                 ) : (
                   <List sx={{ width: '100%' }}>
                     {cart.cartItems.map((item, index) => (
                       <ListItem key={index} divider sx={{ py: 2 }}>
-                        {/* Replaced inner Row with Grid container */}
                         <Grid container alignItems="center" spacing={2}>
-                          {/* Replaced Col with Grid item */}
                           <Grid item xs={12} sm={2} sx={{ display: 'flex', justifyContent: 'center' }}>
-                            {/* Replaced Image with Box component="img" */}
                             <Box
                               component="img"
                               src={item.image}
@@ -148,9 +223,7 @@ const PlaceOrderScreen = () => {
             </ListItem>
           </List>
         </Grid>
-        {/* Replaced Col md={4} with Grid item */}
         <Grid item md={4}>
-          {/* Replaced react-bootstrap Card with MUI Card */}
           <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
             <CardContent>
               <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600 }}>Order Summary</Typography>
@@ -183,30 +256,50 @@ const PlaceOrderScreen = () => {
                   </Grid>
                 </ListItem>
 
-                {error && (
+                {/* Display create order error if any */}
+                {createOrderError && (
                   <ListItem disablePadding sx={{ pt: 1 }}>
-                    {/* Consider using MUI Alert */}
-                    <Message variant='danger'>{error?.data?.message || error?.error}</Message>
+                    <Message variant='danger'>{createOrderError?.data?.message || createOrderError?.error}</Message>
                   </ListItem>
                 )}
 
-                <ListItem disablePadding sx={{ pt: 2 }}>
-                  {/* Replaced react-bootstrap Button with MUI Button */}
-                  <Button
-                    type='button'
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    disabled={cart.cartItems.length === 0 || isLoading}
-                    onClick={placeOrderHandler}
-                    sx={{ padding: '10px 0', fontWeight: 500 }}
-                  >
-                    Place Order
-                    {isLoading && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
-                  </Button>
-                </ListItem>
-                {/* Loader can be kept or integrated differently if needed */}
-                {/* {isLoading && <Loader />} */}
+                {/* Conditional rendering for Place Order Button or PayPal Buttons */}
+                {cart.paymentMethod === 'PayPal' ? (
+                  <ListItem disablePadding sx={{ pt: 2 }}>
+                    {loadingPay && <Loader />} {/* Show loader while paying */}
+                    {isPending ? (
+                      <Loader />
+                    ) : errorPayPal ? (
+                      <Message variant='danger'>{errorPayPal?.data?.message || errorPayPal.error}</Message>
+                    ) : (
+                      <Box sx={{ width: '100%' }}>
+                        <PayPalButtons
+                          style={{ layout: 'vertical' }}
+                          createOrder={createPayPalOrder}
+                          onApprove={onApprove}
+                          onError={onError}
+                          disabled={cart.cartItems.length === 0 || loadingCreateOrder || loadingPay}
+                        ></PayPalButtons>
+                      </Box>
+                    )}
+                  </ListItem>
+                ) : (
+                  // Show standard Place Order button for other methods
+                  <ListItem disablePadding sx={{ pt: 2 }}>
+                    <Button
+                      type='button'
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      disabled={cart.cartItems.length === 0 || loadingCreateOrder}
+                      onClick={placeOrderHandler}
+                      sx={{ padding: '10px 0', fontWeight: 500 }}
+                    >
+                      Place Order
+                      {loadingCreateOrder && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
+                    </Button>
+                  </ListItem>
+                )}
               </List>
             </CardContent>
           </Card>

@@ -8,40 +8,47 @@ import { verifyPayPalPayment, checkIfNewTransaction } from '../utils/paypal.js';
 // @route   POST /api/orders
 // @access  Private
 const addOrderItems = asyncHandler(async (req, res) => {
+  // Comprehensive check for user authentication
   if (!req.user || !req.user._id) {
     res.status(401);
     throw new Error('Not authorized, invalid user data');
+    return; // Make sure execution stops here
   }
 
   const {
     orderItems,
     shippingAddress,
     paymentMethod,
-    itemsPrice,
-    taxPrice,
-    shippingPrice,
-    totalPrice,
   } = req.body;
 
-  if (orderItems && orderItems.length === 0) {
+  if (!orderItems || orderItems.length === 0) {
     res.status(400);
     throw new Error('No order items');
-  } else {
-    // NOTE: here we must assume that the prices from our client are incorrect.
-    // We must only trust the price of the item as it exists in
-    // our DB. This prevents a user paying whatever they want by hacking our client
-    // side code - https://gist.github.com/bushblade/725780e6043eaf59415fbaf6ca7376ff
+    return;
+  }
 
-    // get the ordered items from our database
+  try {
+    // Get the ordered items from our database
     const itemsFromDB = await Product.find({
       _id: { $in: orderItems.map((x) => x._id) },
     });
 
-    // map over the order items and use the price from our items from database
+    if (!itemsFromDB || itemsFromDB.length !== orderItems.length) {
+      res.status(400);
+      throw new Error('Some products were not found');
+      return;
+    }
+
+    // Map over the order items and use the price from our items from database
     const dbOrderItems = orderItems.map((itemFromClient) => {
       const matchingItemFromDB = itemsFromDB.find(
         (itemFromDB) => itemFromDB._id.toString() === itemFromClient._id
       );
+      
+      if (!matchingItemFromDB) {
+        throw new Error(`Product not found: ${itemFromClient._id}`);
+      }
+      
       return {
         ...itemFromClient,
         product: itemFromClient._id,
@@ -50,7 +57,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
       };
     });
 
-    // calculate prices
+    // Calculate prices
     const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
       calcPrices(dbOrderItems);
 
@@ -68,6 +75,9 @@ const addOrderItems = asyncHandler(async (req, res) => {
     const createdOrder = await order.save();
 
     res.status(201).json(createdOrder);
+  } catch (error) {
+    res.status(400);
+    throw error;
   }
 });
 
@@ -75,9 +85,11 @@ const addOrderItems = asyncHandler(async (req, res) => {
 // @route   GET /api/orders/myorders
 // @access  Private
 const getMyOrders = asyncHandler(async (req, res) => {
+  // Comprehensive check for user authentication
   if (!req.user || !req.user._id) {
     res.status(401);
     throw new Error('Not authorized, invalid user data');
+    return; // Make sure execution stops here
   }
   
   const orders = await Order.find({ user: req.user._id });
@@ -105,19 +117,25 @@ const getOrderById = asyncHandler(async (req, res) => {
 // @route   PUT /api/orders/:id/pay
 // @access  Private
 const updateOrderToPaid = asyncHandler(async (req, res) => {
-  // NOTE: here we need to verify the payment was made to PayPal before marking
-  // the order as paid
+  // Ensure user is authenticated
+  if (!req.user || !req.user._id) {
+    res.status(401);
+    throw new Error('Not authorized, invalid user data');
+    return;
+  }
+
+  // Verify the payment was made to PayPal before marking the order as paid
   const { verified, value } = await verifyPayPalPayment(req.body.id);
   if (!verified) throw new Error('Payment not verified');
 
-  // check if this transaction has been used before
+  // Check if this transaction has been used before
   const isNewTransaction = await checkIfNewTransaction(Order, req.body.id);
   if (!isNewTransaction) throw new Error('Transaction has been used before');
 
   const order = await Order.findById(req.params.id);
 
   if (order) {
-    // check the correct amount was paid
+    // Check the correct amount was paid
     const paidCorrectAmount = order.totalPrice.toString() === value;
     if (!paidCorrectAmount) throw new Error('Incorrect amount paid');
 
@@ -143,6 +161,13 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 // @route   GET /api/orders/:id/deliver
 // @access  Private/Admin
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
+  // Ensure user is authenticated and is admin
+  if (!req.user || !req.user._id || !req.user.isAdmin) {
+    res.status(401);
+    throw new Error('Not authorized as admin');
+    return;
+  }
+
   const order = await Order.findById(req.params.id);
 
   if (order) {
@@ -162,6 +187,13 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
 // @route   GET /api/orders
 // @access  Private/Admin
 const getOrders = asyncHandler(async (req, res) => {
+  // Ensure user is authenticated and is admin
+  if (!req.user || !req.user._id || !req.user.isAdmin) {
+    res.status(401);
+    throw new Error('Not authorized as admin');
+    return;
+  }
+
   const orders = await Order.find({}).populate('user', 'id name');
   res.json(orders);
 });

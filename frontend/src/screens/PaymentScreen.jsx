@@ -1,5 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Form, Button, Col } from 'react-bootstrap';
+// Removed react-bootstrap imports: Form, Button, Col
+// import { Form, Button, Col } from 'react-bootstrap';
+import {
+  Box, // Used for layout
+  Typography, // Used for text elements
+  Button, // Replaces react-bootstrap Button
+  FormControl, // Replaces Form.Group
+  FormLabel, // Replaces Form.Label
+  RadioGroup, // Replaces Form.Group for radio buttons
+  FormControlLabel, // Replaces Form.Check
+  Radio, // Replaces Form.Check type='radio'
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import FormContainer from '../components/FormContainer';
@@ -30,28 +41,45 @@ const PaymentScreen = () => {
   return (
     <FormContainer>
       <CheckoutSteps step1 step2 step3 />
-      <h1>Payment Method</h1>
-      <Form onSubmit={submitHandler}>
-        <Form.Group>
-          <Form.Label as='legend'>Select Method</Form.Label>
-          <Col>
-            <Form.Check
-              className='my-2'
-              type='radio'
-              label='PayPal or Credit Card'
-              id='PayPal'
-              name='paymentMethod'
-              value='PayPal'
-              checked
-              onChange={(e) => setPaymentMethod(e.target.value)}
-            ></Form.Check>
-          </Col>
-        </Form.Group>
+      {/* Replaced h1 with Typography */}
+      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+        Payment Method
+      </Typography>
+      {/* Replaced Form with Box component="form" */}
+      <Box component="form" onSubmit={submitHandler} sx={{ mt: 1 }}>
+        {/* Replaced Form.Group with FormControl */}
+        <FormControl component="fieldset" margin="normal">
+          {/* Replaced Form.Label with FormLabel */}
+          <FormLabel component="legend" sx={{ fontWeight: 500, mb: 1 }}>Select Method</FormLabel>
+          {/* Replaced Col with RadioGroup */}
+          <RadioGroup
+            aria-label="payment method"
+            name="paymentMethod"
+            value={paymentMethod}
+            onChange={(e) => setPaymentMethod(e.target.value)}
+          >
+            {/* Replaced Form.Check with FormControlLabel and Radio */}
+            <FormControlLabel
+              value="PayPal"
+              control={<Radio />}
+              label="PayPal or Credit Card"
+            />
+            {/* Add more payment methods here if needed */}
+            {/* <FormControlLabel value="Stripe" control={<Radio />} label="Stripe" /> */}
+          </RadioGroup>
+        </FormControl>
 
-        <Button type='submit' variant='primary'>
+        {/* Replaced react-bootstrap Button with MUI Button */}
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 3, py: 1.5, fontWeight: 500 }}
+        >
           Continue
         </Button>
-      </Form>
+      </Box>
     </FormContainer>
   );
 };

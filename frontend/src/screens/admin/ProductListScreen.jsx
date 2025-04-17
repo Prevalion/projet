@@ -1,7 +1,27 @@
-import { Table, Button, Row, Col } from 'react-bootstrap';
-import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
-import { Link, useParams } from 'react-router-dom';
-import Message from '../../components/Message';
+import React from 'react'; // Added React import
+// Removed react-bootstrap imports: Table, Button, Row, Col
+// import { Table, Button, Row, Col } from 'react-bootstrap';
+import {
+  Typography, // Used for text elements
+  Button, // Replaces react-bootstrap Button
+  Grid, // Replaces Row, Col
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper, // Used for container styling
+  IconButton, // Replaces Button for icons
+  Box, // Used for layout
+  CircularProgress // Used for loading states
+} from '@mui/material';
+// import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa'; // Replace with MUI Icons
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Link as RouterLink, useParams } from 'react-router-dom'; // Renamed Link
+import Message from '../../components/Message'; // Keep or replace with MUI Alert
 import Loader from '../../components/Loader';
 import Paginate from '../../components/Paginate';
 import {
@@ -10,6 +30,7 @@ import {
   useCreateProductMutation,
 } from '../../slices/productsApiSlice';
 import { toast } from 'react-toastify';
+// Removed react-router-dom Link import as RouterLink is used
 
 const ProductListScreen = () => {
   const { pageNumber } = useParams();
@@ -22,9 +43,10 @@ const ProductListScreen = () => {
     useDeleteProductMutation();
 
   const deleteHandler = async (id) => {
-    if (window.confirm('Are you sure')) {
+    if (window.confirm('Are you sure you want to delete this product?')) { // Improved confirmation message
       try {
         await deleteProduct(id);
+        toast.success('Product deleted'); // Added success toast
         refetch();
       } catch (err) {
         toast.error(err?.data?.message || err.error);
@@ -39,6 +61,7 @@ const ProductListScreen = () => {
     if (window.confirm('Are you sure you want to create a new product?')) {
       try {
         await createProduct();
+        toast.success('Product created'); // Added success toast
         refetch();
       } catch (err) {
         toast.error(err?.data?.message || err.error);
@@ -48,66 +71,93 @@ const ProductListScreen = () => {
 
   return (
     <>
-      <Row className='align-items-center'>
-        <Col>
-          <h1>Products</h1>
-        </Col>
-        <Col className='text-end'>
-          <Button className='my-3' onClick={createProductHandler}>
-            <FaPlus /> Create Product
+      {/* Replaced Row/Col with Grid */}
+      <Grid container alignItems="center" sx={{ mb: 3 }}>
+        <Grid item xs>
+          {/* Replaced h1 with Typography */}
+          <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
+            Products
+          </Typography>
+        </Grid>
+        <Grid item>
+          {/* Replaced react-bootstrap Button with MUI Button */}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={createProductHandler}
+            startIcon={<AddIcon />}
+            disabled={loadingCreate}
+          >
+            Create Product
+            {loadingCreate && <CircularProgress size={20} sx={{ ml: 1, color: 'white' }} />}
           </Button>
-        </Col>
-      </Row>
+        </Grid>
+      </Grid>
 
+      {/* Loaders remain the same, but could be integrated differently */}
       {loadingCreate && <Loader />}
       {loadingDelete && <Loader />}
       {isLoading ? (
         <Loader />
       ) : error ? (
-        <Message variant='danger'>{error.data.message}</Message>
+        // Consider using MUI Alert
+        <Message variant='danger'>{error?.data?.message || error.error}</Message>
       ) : (
         <>
-          <Table striped bordered hover responsive className='table-sm'>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>NAME</th>
-                <th>PRICE</th>
-                <th>CATEGORY</th>
-                <th>BRAND</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.products.map((product) => (
-                <tr key={product._id}>
-                  <td>{product._id}</td>
-                  <td>{product.name}</td>
-                  <td>${product.price}</td>
-                  <td>{product.category}</td>
-                  <td>{product.brand}</td>
-                  <td>
-                    <Button
-                      as={Link}
-                      to={`/admin/product/${product._id}/edit`}
-                      variant='light'
-                      className='btn-sm mx-2'
-                    >
-                      <FaEdit />
-                    </Button>
-                    <Button
-                      variant='danger'
-                      className='btn-sm'
-                      onClick={() => deleteHandler(product._id)}
-                    >
-                      <FaTrash style={{ color: 'white' }} />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-          <Paginate pages={data.pages} page={data.page} isAdmin={true} />
+          {/* Replaced react-bootstrap Table with MUI Table components */}
+          <TableContainer component={Paper} elevation={1}>
+            <Table sx={{ minWidth: 650 }} aria-label="products table">
+              <TableHead sx={{ bgcolor: 'grey.100' }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>NAME</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>PRICE</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>CATEGORY</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>BRAND</TableCell>
+                  <TableCell></TableCell> {/* Empty cell for action buttons */}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {data.products.map((product) => (
+                  <TableRow
+                    key={product._id}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell component="th" scope="row">
+                      {product._id}
+                    </TableCell>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>${product.price}</TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell>{product.brand}</TableCell>
+                    <TableCell align="right">
+                      {/* Replaced react-bootstrap Buttons with MUI IconButtons */}
+                      <IconButton
+                        component={RouterLink}
+                        to={`/admin/product/${product._id}/edit`}
+                        size="small"
+                        sx={{ mr: 1 }} // Add margin right
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => deleteHandler(product._id)}
+                        disabled={loadingDelete}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          {/* Paginate component remains, ensure it's compatible or update if needed */}
+          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
+            <Paginate pages={data.pages} page={data.page} isAdmin={true} />
+          </Box>
         </>
       )}
     </>

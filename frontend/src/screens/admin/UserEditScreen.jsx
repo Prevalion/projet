@@ -1,11 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Form, Button } from 'react-bootstrap';
-import Message from '../../components/Message';
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'; // Renamed Link
+// Removed react-bootstrap imports: Form, Button
+// import { Form, Button } from 'react-bootstrap';
+import {
+  Box, // Used for layout
+  Typography, // Used for text elements
+  Button, // Replaces react-bootstrap Button
+  TextField, // Replaces Form.Control
+  FormControlLabel, // Replaces Form.Check
+  Checkbox, // Replaces Form.Check type='checkbox'
+  CircularProgress, // Used for loading states
+  Link, // MUI Link component
+} from '@mui/material';
+import Message from '../../components/Message'; // Keep or replace with MUI Alert
 import Loader from '../../components/Loader';
 import FormContainer from '../../components/FormContainer';
 import { toast } from 'react-toastify';
-import { useParams } from 'react-router-dom';
+// Removed useParams import as it's already imported from react-router-dom
 import {
   useGetUserDetailsQuery,
   useUpdateUserMutation,
@@ -32,7 +43,7 @@ const UserEditScreen = () => {
     e.preventDefault();
     try {
       await updateUser({ userId, name, email, isAdmin });
-      toast.success('user updated successfully');
+      toast.success('User updated successfully');
       refetch();
       navigate('/admin/userlist');
     } catch (err) {
@@ -50,53 +61,75 @@ const UserEditScreen = () => {
 
   return (
     <>
-      <Link to='/admin/userlist' className='btn btn-light my-3'>
+      {/* Replaced react-bootstrap Link with MUI Button + RouterLink */}
+      <Button component={RouterLink} to='/admin/userlist' variant="outlined" sx={{ mb: 3 }}>
         Go Back
-      </Link>
+      </Button>
       <FormContainer>
-        <h1>Edit User</h1>
+        {/* Replaced h1 with Typography */}
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+          Edit User
+        </Typography>
         {loadingUpdate && <Loader />}
         {isLoading ? (
           <Loader />
         ) : error ? (
+          // Consider using MUI Alert
           <Message variant='danger'>
             {error?.data?.message || error.error}
           </Message>
         ) : (
-          <Form onSubmit={submitHandler}>
-            <Form.Group className='my-2' controlId='name'>
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type='name'
-                placeholder='Enter name'
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+          /* Replaced Form with Box component="form" */
+          <Box component="form" onSubmit={submitHandler} sx={{ mt: 1 }}>
+            {/* Replaced Form.Group/Form.Control with TextField */}
+            <TextField
+              fullWidth
+              margin="normal"
+              id="name"
+              label="Name"
+              variant="outlined"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
 
-            <Form.Group className='my-2' controlId='email'>
-              <Form.Label>Email Address</Form.Label>
-              <Form.Control
-                type='email'
-                placeholder='Enter email'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+            <TextField
+              fullWidth
+              margin="normal"
+              id="email"
+              label="Email Address"
+              type="email"
+              variant="outlined"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-            <Form.Group className='my-2' controlId='isadmin'>
-              <Form.Check
-                type='checkbox'
-                label='Is Admin'
-                checked={isAdmin}
-                onChange={(e) => setIsAdmin(e.target.checked)}
-              ></Form.Check>
-            </Form.Group>
+            {/* Replaced Form.Group/Form.Check with FormControlLabel and Checkbox */}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={isAdmin}
+                  onChange={(e) => setIsAdmin(e.target.checked)}
+                  name="isAdmin"
+                />
+              }
+              label="Is Admin"
+              sx={{ mt: 1, display: 'block' }} // Ensure it takes full width if needed
+            />
 
-            <Button type='submit' variant='primary'>
-              Update
+            {/* Replaced react-bootstrap Button with MUI Button */}
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              sx={{ mt: 3, py: 1.5, fontWeight: 500 }}
+              disabled={loadingUpdate}
+            >
+              Update User
+              {loadingUpdate && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
             </Button>
-          </Form>
+          </Box>
         )}
       </FormContainer>
     </>

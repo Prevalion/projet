@@ -1,15 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Form, Button, Row, Col } from 'react-bootstrap';
+// Removed react-bootstrap imports: Table, Form, Button, Row, Col
+import {
+  Grid, // Replaces Row, Col
+  Box, // Used for layout
+  Typography, // Used for text elements
+  Button, // Replaces react-bootstrap Button
+  TextField, // Replaces Form.Control
+  Table, // Replaces react-bootstrap Table
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper, // Used for container styling
+  CircularProgress, // Used for loading states
+  IconButton, // Can be used for icons like FaTimes
+} from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom'; // Renamed Link to avoid conflict
 import { useDispatch, useSelector } from 'react-redux';
-import { FaTimes } from 'react-icons/fa';
+// import { FaTimes } from 'react-icons/fa'; // Replace with MUI Icon if needed
+import CloseIcon from '@mui/icons-material/Close'; // MUI alternative for FaTimes
 
 import { toast } from 'react-toastify';
-import Message from '../components/Message';
+import Message from '../components/Message'; // Keep or replace with MUI Alert
 import Loader from '../components/Loader';
 import { useProfileMutation } from '../slices/usersApiSlice';
 import { useGetMyOrdersQuery } from '../slices/ordersApiSlice';
 import { setCredentials } from '../slices/authSlice';
-import { Link } from 'react-router-dom';
+// Removed react-router-dom Link import as RouterLink is used
 
 const ProfileScreen = () => {
   const [name, setName] = useState('');
@@ -19,15 +37,17 @@ const ProfileScreen = () => {
 
   const { userInfo } = useSelector((state) => state.auth);
 
-  const { data: orders, isLoading, error } = useGetMyOrdersQuery();
+  const { data: orders, isLoading: isLoadingOrders, error: errorOrders } = useGetMyOrdersQuery();
 
   const [updateProfile, { isLoading: loadingUpdateProfile }] =
     useProfileMutation();
 
   useEffect(() => {
-    setName(userInfo.name);
-    setEmail(userInfo.email);
-  }, [userInfo.email, userInfo.name]);
+    if (userInfo) {
+      setName(userInfo.name);
+      setEmail(userInfo.email);
+    }
+  }, [userInfo]);
 
   const dispatch = useDispatch();
   const submitHandler = async (e) => {
@@ -37,15 +57,14 @@ const ProfileScreen = () => {
     } else {
       try {
         const res = await updateProfile({
-          // NOTE: here we don't need the _id in the request payload as this is
-          // not used in our controller.
-          // _id: userInfo._id,
           name,
           email,
           password,
         }).unwrap();
         dispatch(setCredentials({ ...res }));
         toast.success('Profile updated successfully');
+        setPassword(''); // Clear password fields after successful update
+        setConfirmPassword('');
       } catch (err) {
         toast.error(err?.data?.message || err.error);
       }
@@ -53,114 +72,147 @@ const ProfileScreen = () => {
   };
 
   return (
-    <Row>
-      <Col md={3}>
-        <h2>User Profile</h2>
+    // Replaced Row with Grid container
+    <Grid container spacing={4}>
+      {/* Replaced Col md={3} with Grid item */}
+      <Grid item md={3}>
+        <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
+          User Profile
+        </Typography>
 
-        <Form onSubmit={submitHandler}>
-          <Form.Group className='my-2' controlId='name'>
-            <Form.Label>Name</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Enter name'
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+        {/* Replaced Form with Box component="form" */}
+        <Box component="form" onSubmit={submitHandler} sx={{ mt: 1 }}>
+          {/* Replaced Form.Group/Form.Control with TextField */}
+          <TextField
+            fullWidth
+            margin="normal"
+            id="name"
+            label="Name"
+            variant="outlined"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
 
-          <Form.Group className='my-2' controlId='email'>
-            <Form.Label>Email Address</Form.Label>
-            <Form.Control
-              type='email'
-              placeholder='Enter email'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+          <TextField
+            fullWidth
+            margin="normal"
+            id="email"
+            label="Email Address"
+            type="email"
+            variant="outlined"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-          <Form.Group className='my-2' controlId='password'>
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type='password'
-              placeholder='Enter password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+          <TextField
+            fullWidth
+            margin="normal"
+            id="password"
+            label="Password"
+            type="password"
+            variant="outlined"
+            placeholder="Enter new password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-          <Form.Group className='my-2' controlId='confirmPassword'>
-            <Form.Label>Confirm Password</Form.Label>
-            <Form.Control
-              type='password'
-              placeholder='Confirm password'
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+          <TextField
+            fullWidth
+            margin="normal"
+            id="confirmPassword"
+            label="Confirm Password"
+            type="password"
+            variant="outlined"
+            placeholder="Confirm new password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+          />
 
-          <Button type='submit' variant='primary'>
-            Update
+          {/* Replaced react-bootstrap Button with MUI Button */}
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 500 }}
+            disabled={loadingUpdateProfile}
+          >
+            Update Profile
+            {loadingUpdateProfile && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
           </Button>
-          {loadingUpdateProfile && <Loader />}
-        </Form>
-      </Col>
-      <Col md={9}>
-        <h2>My Orders</h2>
-        {isLoading ? (
+        </Box>
+      </Grid>
+      {/* Replaced Col md={9} with Grid item */}
+      <Grid item md={9}>
+        <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
+          My Orders
+        </Typography>
+        {isLoadingOrders ? (
           <Loader />
-        ) : error ? (
+        ) : errorOrders ? (
+          // Consider using MUI Alert
           <Message variant='danger'>
-            {error?.data?.message || error.error}
+            {errorOrders?.data?.message || errorOrders.error}
           </Message>
         ) : (
-          <Table striped hover responsive className='table-sm'>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>DATE</th>
-                <th>TOTAL</th>
-                <th>PAID</th>
-                <th>DELIVERED</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order._id}>
-                  <td>{order._id}</td>
-                  <td>{order.createdAt.substring(0, 10)}</td>
-                  <td>{order.totalPrice}</td>
-                  <td>
-                    {order.isPaid ? (
-                      order.paidAt.substring(0, 10)
-                    ) : (
-                      <FaTimes style={{ color: 'red' }} />
-                    )}
-                  </td>
-                  <td>
-                    {order.isDelivered ? (
-                      order.deliveredAt.substring(0, 10)
-                    ) : (
-                      <FaTimes style={{ color: 'red' }} />
-                    )}
-                  </td>
-                  <td>
-                    <Button
-                      as={Link}
-                      to={`/order/${order._id}`}
-                      className='btn-sm'
-                      variant='light'
-                    >
-                      Details
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          // Replaced react-bootstrap Table with MUI Table components
+          <TableContainer component={Paper} elevation={1}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <TableHead sx={{ bgcolor: 'grey.100' }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>DATE</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>TOTAL</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>PAID</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>DELIVERED</TableCell>
+                  <TableCell></TableCell> {/* Empty cell for details button */}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {orders.map((order) => (
+                  <TableRow
+                    key={order._id}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell component="th" scope="row">
+                      {order._id}
+                    </TableCell>
+                    <TableCell>{order.createdAt.substring(0, 10)}</TableCell>
+                    <TableCell>${order.totalPrice}</TableCell>
+                    <TableCell>
+                      {order.isPaid ? (
+                        order.paidAt.substring(0, 10)
+                      ) : (
+                        <CloseIcon sx={{ color: 'red' }} />
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {order.isDelivered ? (
+                        order.deliveredAt.substring(0, 10)
+                      ) : (
+                        <CloseIcon sx={{ color: 'red' }} />
+                      )}
+                    </TableCell>
+                    <TableCell align="right">
+                      {/* Replaced react-bootstrap Button with MUI Button */}
+                      <Button
+                        component={RouterLink} // Use RouterLink for navigation
+                        to={`/order/${order._id}`}
+                        size="small"
+                        variant="outlined"
+                      >
+                        Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         )}
-      </Col>
-    </Row>
+      </Grid>
+    </Grid>
   );
 };
 

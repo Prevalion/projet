@@ -1,7 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Form, Button } from 'react-bootstrap';
-import Message from '../../components/Message';
+import { Link as RouterLink, useNavigate, useParams } from 'react-router-dom'; // Renamed Link
+// Removed react-bootstrap imports: Form, Button
+// import { Form, Button } from 'react-bootstrap';
+import {
+  Box, // Used for layout
+  Typography, // Used for text elements
+  Button, // Replaces react-bootstrap Button
+  TextField, // Replaces Form.Control
+  CircularProgress, // Used for loading states
+  Link, // MUI Link component
+  Input, // Can be used for file input
+} from '@mui/material';
+import Message from '../../components/Message'; // Keep or replace with MUI Alert
 import Loader from '../../components/Loader';
 import FormContainer from '../../components/FormContainer';
 import { toast } from 'react-toastify';
@@ -43,13 +53,13 @@ const ProductEditScreen = () => {
       await updateProduct({
         productId,
         name,
-        price,
+        price: Number(price), // Ensure price is a number
         image,
         brand,
         category,
         description,
-        countInStock,
-      }).unwrap(); // NOTE: here we need to unwrap the Promise to catch any rejection in our catch block
+        countInStock: Number(countInStock), // Ensure countInStock is a number
+      }).unwrap();
       toast.success('Product updated');
       refetch();
       navigate('/admin/productlist');
@@ -72,114 +82,150 @@ const ProductEditScreen = () => {
 
   const uploadFileHandler = async (e) => {
     const formData = new FormData();
-    formData.append('image', e.target.files[0]);
-    try {
-      const res = await uploadProductImage(formData).unwrap();
-      toast.success(res.message);
-      setImage(res.image);
-    } catch (err) {
-      toast.error(err?.data?.message || err.error);
+    if (e.target.files && e.target.files[0]) {
+      formData.append('image', e.target.files[0]);
+      try {
+        const res = await uploadProductImage(formData).unwrap();
+        toast.success(res.message);
+        setImage(res.image);
+      } catch (err) {
+        toast.error(err?.data?.message || err.error);
+      }
     }
   };
 
   return (
     <>
-      <Link to='/admin/productlist' className='btn btn-light my-3'>
+      {/* Replaced react-bootstrap Link with MUI Link + RouterLink */}
+      <Button component={RouterLink} to='/admin/productlist' variant="outlined" sx={{ mb: 3 }}>
         Go Back
-      </Link>
+      </Button>
       <FormContainer>
-        <h1>Edit Product</h1>
+        {/* Replaced h1 with Typography */}
+        <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+          Edit Product
+        </Typography>
         {loadingUpdate && <Loader />}
+        {loadingUpload && <Loader />}
         {isLoading ? (
           <Loader />
         ) : error ? (
-          <Message variant='danger'>{error.data.message}</Message>
+          // Consider using MUI Alert
+          <Message variant='danger'>{error?.data?.message || error.error}</Message>
         ) : (
-          <Form onSubmit={submitHandler}>
-            <Form.Group controlId='name'>
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type='name'
-                placeholder='Enter name'
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+          /* Replaced Form with Box component="form" */
+          <Box component="form" onSubmit={submitHandler} sx={{ mt: 1 }}>
+            {/* Replaced Form.Group/Form.Control with TextField */}
+            <TextField
+              fullWidth
+              margin="normal"
+              id="name"
+              label="Name"
+              variant="outlined"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
 
-            <Form.Group controlId='price'>
-              <Form.Label>Price</Form.Label>
-              <Form.Control
-                type='number'
-                placeholder='Enter price'
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+            <TextField
+              fullWidth
+              margin="normal"
+              id="price"
+              label="Price"
+              type="number"
+              variant="outlined"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              required
+              InputProps={{ inputProps: { min: 0, step: "0.01" } }} // Added input props for better number handling
+            />
 
-            <Form.Group controlId='image'>
-              <Form.Label>Image</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter image url'
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-              ></Form.Control>
-              <Form.Control
-                label='Choose File'
-                onChange={uploadFileHandler}
-                type='file'
-              ></Form.Control>
-              {loadingUpload && <Loader />}
-            </Form.Group>
-
-            <Form.Group controlId='brand'>
-              <Form.Label>Brand</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter brand'
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
-            <Form.Group controlId='countInStock'>
-              <Form.Label>Count In Stock</Form.Label>
-              <Form.Control
-                type='number'
-                placeholder='Enter countInStock'
-                value={countInStock}
-                onChange={(e) => setCountInStock(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
-            <Form.Group controlId='category'>
-              <Form.Label>Category</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter category'
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
-            <Form.Group controlId='description'>
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter description'
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
+            {/* Image Input Field */}
+            <TextField
+              fullWidth
+              margin="normal"
+              id="image-url"
+              label="Image URL"
+              variant="outlined"
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+              sx={{ mb: 1 }} // Add margin bottom
+            />
+            {/* File Upload Input - styled to look like a button */}
             <Button
-              type='submit'
-              variant='primary'
-              style={{ marginTop: '1rem' }}
+              variant="contained"
+              component="label"
+              fullWidth
+              sx={{ mb: 2 }} // Add margin bottom
             >
-              Update
+              Choose File
+              <input
+                type="file"
+                hidden
+                onChange={uploadFileHandler}
+              />
             </Button>
-          </Form>
+
+            <TextField
+              fullWidth
+              margin="normal"
+              id="brand"
+              label="Brand"
+              variant="outlined"
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              required
+            />
+
+            <TextField
+              fullWidth
+              margin="normal"
+              id="countInStock"
+              label="Count In Stock"
+              type="number"
+              variant="outlined"
+              value={countInStock}
+              onChange={(e) => setCountInStock(e.target.value)}
+              required
+              InputProps={{ inputProps: { min: 0 } }} // Added input props
+            />
+
+            <TextField
+              fullWidth
+              margin="normal"
+              id="category"
+              label="Category"
+              variant="outlined"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              required
+            />
+
+            <TextField
+              fullWidth
+              margin="normal"
+              id="description"
+              label="Description"
+              variant="outlined"
+              multiline // Allow multiple lines
+              rows={4} // Set initial rows
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            />
+
+            {/* Replaced react-bootstrap Button with MUI Button */}
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              sx={{ mt: 3, py: 1.5, fontWeight: 500 }}
+              disabled={loadingUpdate}
+            >
+              Update Product
+              {loadingUpdate && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
+            </Button>
+          </Box>
         )}
       </FormContainer>
     </>

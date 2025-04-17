@@ -61,8 +61,9 @@ const ProductCarousel = ({ products, isLoading, error }) => {
               sx={{
                 width: '100%',
                 height: { xs: 250, sm: 350, md: 450 }, // Responsive height
-                objectFit: 'cover',
+                objectFit: 'contain', // Changed from 'cover' to 'contain'
                 display: 'block',
+                backgroundColor: '#f8f9fa' // Optional: Add a background color if images have transparency or don't fill the space
               }}
               src={product.image}
               alt={product.name}

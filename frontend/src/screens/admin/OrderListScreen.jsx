@@ -1,70 +1,99 @@
-import { Table, Button } from 'react-bootstrap';
-import { FaTimes } from 'react-icons/fa';
-import Message from '../../components/Message';
+import React from 'react';
+// Removed react-bootstrap imports: Table, Button
+// import { Table, Button } from 'react-bootstrap';
+import {
+  Typography, // Used for text elements
+  Button, // Replaces react-bootstrap Button
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper, // Used for container styling
+  Link as MuiLink, // MUI Link component
+} from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom'; // Renamed Link
+// import { FaTimes } from 'react-icons/fa'; // Replace with MUI Icon if needed
+import CloseIcon from '@mui/icons-material/Close'; // MUI alternative for FaTimes
+import Message from '../../components/Message'; // Keep or replace with MUI Alert
 import Loader from '../../components/Loader';
 import { useGetOrdersQuery } from '../../slices/ordersApiSlice';
-import { Link } from 'react-router-dom';
+// Removed react-router-dom Link import as RouterLink is used
 
 const OrderListScreen = () => {
   const { data: orders, isLoading, error } = useGetOrdersQuery();
 
   return (
     <>
-      <h1>Orders</h1>
+      {/* Replaced h1 with Typography */}
+      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+        Orders
+      </Typography>
       {isLoading ? (
         <Loader />
       ) : error ? (
+        // Consider using MUI Alert
         <Message variant='danger'>
           {error?.data?.message || error.error}
         </Message>
       ) : (
-        <Table striped bordered hover responsive className='table-sm'>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>USER</th>
-              <th>DATE</th>
-              <th>TOTAL</th>
-              <th>PAID</th>
-              <th>DELIVERED</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order._id}>
-                <td>{order._id}</td>
-                <td>{order.user && order.user.name}</td>
-                <td>{order.createdAt.substring(0, 10)}</td>
-                <td>${order.totalPrice}</td>
-                <td>
-                  {order.isPaid ? (
-                    order.paidAt.substring(0, 10)
-                  ) : (
-                    <FaTimes style={{ color: 'red' }} />
-                  )}
-                </td>
-                <td>
-                  {order.isDelivered ? (
-                    order.deliveredAt.substring(0, 10)
-                  ) : (
-                    <FaTimes style={{ color: 'red' }} />
-                  )}
-                </td>
-                <td>
-                  <Button
-                    as={Link}
-                    to={`/order/${order._id}`}
-                    variant='light'
-                    className='btn-sm'
-                  >
-                    Details
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        // Replaced react-bootstrap Table with MUI Table components
+        <TableContainer component={Paper} elevation={1}>
+          <Table sx={{ minWidth: 650 }} aria-label="orders table">
+            <TableHead sx={{ bgcolor: 'grey.100' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 'bold' }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>USER</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>DATE</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>TOTAL</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>PAID</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>DELIVERED</TableCell>
+                <TableCell></TableCell> {/* Empty cell for details button */}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {orders.map((order) => (
+                <TableRow
+                  key={order._id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell component="th" scope="row">
+                    {order._id}
+                  </TableCell>
+                  <TableCell>{order.user && order.user.name}</TableCell>
+                  <TableCell>{order.createdAt.substring(0, 10)}</TableCell>
+                  <TableCell>${order.totalPrice}</TableCell>
+                  <TableCell>
+                    {order.isPaid ? (
+                      order.paidAt.substring(0, 10)
+                    ) : (
+                      <CloseIcon sx={{ color: 'red' }} />
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {order.isDelivered ? (
+                      order.deliveredAt.substring(0, 10)
+                    ) : (
+                      <CloseIcon sx={{ color: 'red' }} />
+                    )}
+                  </TableCell>
+                  <TableCell align="right">
+                    {/* Replaced react-bootstrap Button with MUI Button */}
+                    <Button
+                      component={RouterLink} // Use RouterLink for navigation
+                      to={`/order/${order._id}`}
+                      size="small"
+                      variant="outlined"
+                    >
+                      Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </>
   );

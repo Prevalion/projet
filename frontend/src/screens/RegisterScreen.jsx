@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Form, Button, Row, Col } from 'react-bootstrap';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'; // Renamed Link
+// Removed react-bootstrap imports: Form, Button, Row, Col
+// import { Form, Button, Row, Col } from 'react-bootstrap';
+import {
+  Box, // Used for layout
+  Typography, // Used for text elements
+  Button, // Replaces react-bootstrap Button
+  TextField, // Replaces Form.Control
+  Grid, // Replaces Row, Col
+  Link, // MUI Link component
+  CircularProgress // Used for loading states
+} from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../components/Loader';
 import FormContainer from '../components/FormContainer';
@@ -50,62 +60,94 @@ const RegisterScreen = () => {
 
   return (
     <FormContainer>
-      <h1>Register</h1>
-      <Form onSubmit={submitHandler}>
-        <Form.Group className='my-2' controlId='name'>
-          <Form.Label>Name</Form.Label>
-          <Form.Control
-            type='name'
-            placeholder='Enter name'
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+      {/* Replaced h1 with Typography */}
+      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+        Register
+      </Typography>
+      {/* Replaced Form with Box component="form" */}
+      <Box component="form" onSubmit={submitHandler} sx={{ mt: 1 }}>
+        {/* Replaced Form.Group/Form.Control with TextField */}
+        <TextField
+          fullWidth
+          margin="normal"
+          id="name"
+          label="Name"
+          type="text" // Changed from 'name'
+          variant="outlined"
+          placeholder='Enter name'
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
 
-        <Form.Group className='my-2' controlId='email'>
-          <Form.Label>Email Address</Form.Label>
-          <Form.Control
-            type='email'
-            placeholder='Enter email'
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+        <TextField
+          fullWidth
+          margin="normal"
+          id="email"
+          label="Email Address"
+          type="email"
+          variant="outlined"
+          placeholder='Enter email'
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
-        <Form.Group className='my-2' controlId='password'>
-          <Form.Label>Password</Form.Label>
-          <Form.Control
-            type='password'
-            placeholder='Enter password'
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-        <Form.Group className='my-2' controlId='confirmPassword'>
-          <Form.Label>Confirm Password</Form.Label>
-          <Form.Control
-            type='password'
-            placeholder='Confirm password'
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+        <TextField
+          fullWidth
+          margin="normal"
+          id="password"
+          label="Password"
+          type="password"
+          variant="outlined"
+          placeholder='Enter password'
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-        <Button disabled={isLoading} type='submit' variant='primary'>
+        <TextField
+          fullWidth
+          margin="normal"
+          id="confirmPassword"
+          label="Confirm Password"
+          type="password"
+          variant="outlined"
+          placeholder='Confirm password'
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+        />
+
+        {/* Replaced react-bootstrap Button with MUI Button */}
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          disabled={isLoading}
+          sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 500 }}
+        >
           Register
+          {isLoading && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
         </Button>
 
-        {isLoading && <Loader />}
-      </Form>
+        {/* Loader can be kept or integrated differently if needed */}
+        {/* {isLoading && <Loader />} */}
+      </Box>
 
-      <Row className='py-3'>
-        <Col>
-          Already have an account?{' '}
-          <Link to={redirect ? `/login?redirect=${redirect}` : '/login'}>
-            Login
-          </Link>
-        </Col>
-      </Row>
+      {/* Replaced Row/Col with Grid */}
+      <Grid container justifyContent="flex-start" sx={{ mt: 3 }}>
+        <Grid item>
+          <Typography variant="body2">
+            Already have an account?{' '}
+            {/* Use MUI Link with RouterLink component */}
+            <Link component={RouterLink} to={redirect ? `/login?redirect=${redirect}` : '/login'} variant="body2">
+              Login
+            </Link>
+          </Typography>
+        </Grid>
+      </Grid>
     </FormContainer>
   );
 };

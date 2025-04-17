@@ -7,6 +7,7 @@ import {
   RouterProvider 
 } from 'react-router-dom';
 import { Provider } from 'react-redux';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js'; // Added import
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import theme from './theme';
@@ -76,10 +77,12 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <HelmetProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <RouterProvider router={router} />
-        </ThemeProvider>
+        <PayPalScriptProvider deferLoading={true}> {/* Added PayPal Provider */} 
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </PayPalScriptProvider> {/* Added PayPal Provider closing tag */}
       </HelmetProvider>
     </Provider>
   </React.StrictMode>

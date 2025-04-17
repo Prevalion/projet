@@ -29,6 +29,12 @@ import { useGetMyOrdersQuery } from '../slices/ordersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 // Removed react-router-dom Link import as RouterLink is used
 
+// Add these imports
+import { 
+  useForgotPasswordMutation,
+  useResetPasswordMutation 
+} from '../slices/usersApiSlice';
+
 const ProfileScreen = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -41,6 +47,14 @@ const ProfileScreen = () => {
 
   const [updateProfile, { isLoading: loadingUpdateProfile }] =
     useProfileMutation();
+
+  // Moved hook calls inside the component
+  const [forgotPassword, { isLoading: loadingForgotPassword }] = useForgotPasswordMutation(); // Added loading state
+  // const [resetPassword] = useResetPasswordMutation(); // Assuming reset happens on a different screen/flow after link click
+
+  // State for showing the reset form elements (if needed within this screen)
+  // const [showResetForm, setShowResetForm] = useState(false); // Example state
+  // const [newPassword, setNewPassword] = useState(''); // Example state
 
   useEffect(() => {
     if (userInfo) {
@@ -141,6 +155,52 @@ const ProfileScreen = () => {
             Update Profile
             {loadingUpdateProfile && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
           </Button>
+
+          {/* Password Reset Section */}
+          <Box sx={{ mt: 4, pt: 2, borderTop: '1px solid', borderColor: 'grey.300' }}>
+            <Typography variant="h6" gutterBottom>Password Reset</Typography>
+            <Button
+              variant="outlined"
+              onClick={async () => { // Make async for potential API call feedback
+                if (!userInfo || !userInfo.email) {
+                  toast.error('User information not available.');
+                  return;
+                }
+                try {
+                  await forgotPassword({ email: userInfo.email }).unwrap(); // Pass email in object
+                  toast.success('Password reset link sent to your email.');
+                  // Optionally hide button or show message after sending
+                } catch (err) {
+                  toast.error(err?.data?.message || err.error || 'Failed to send reset link.');
+                }
+              }}
+              sx={{ mt: 1 }}
+              disabled={loadingForgotPassword} // Disable button while sending
+            >
+              Send Reset Link
+              {loadingForgotPassword && <CircularProgress size={24} sx={{ ml: 1 }} />}
+            </Button>
+            {/* Removed the reset form part as reset usually happens via email link */}
+            {/* If reset needs to happen here, uncomment and implement state/handlers */}
+            {/* {showResetForm && (
+              <Box sx={{ mt: 2 }}>
+                <TextField
+                  label="New Password"
+                  type="password"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handlePasswordReset} // Define this handler
+                >
+                  Update Password
+                </Button>
+              </Box>
+            )} */}
+          </Box>
         </Box>
       </Grid>
       {/* Replaced Col md={9} with Grid item */}
@@ -217,3 +277,5 @@ const ProfileScreen = () => {
 };
 
 export default ProfileScreen;
+
+// Removed hook calls and JSX from outside the component

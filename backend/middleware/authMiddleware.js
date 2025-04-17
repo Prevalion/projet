@@ -26,6 +26,7 @@ const protect = asyncHandler(async (req, res, next) => {
     }
   }
 
+  // If token was not found in the header after the initial check
   if (!token) {
     res.status(401);
     throw new Error('Not authorized, no token');

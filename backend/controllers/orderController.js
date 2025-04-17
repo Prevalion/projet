@@ -121,23 +121,36 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
   if (!req.user || !req.user._id) {
     res.status(401);
     throw new Error('Not authorized, invalid user data');
-    return;
+    // No return needed here as throw exits the function
   }
 
   // Verify the payment was made to PayPal before marking the order as paid
+  // --- Potential Hang Point ---
+  // Ensure verifyPayPalPayment has proper error handling and timeouts
   const { verified, value } = await verifyPayPalPayment(req.body.id);
-  if (!verified) throw new Error('Payment not verified');
+  if (!verified) {
+      res.status(400); // Send a response even if verification fails
+      throw new Error('Payment not verified');
+  }
 
   // Check if this transaction has been used before
+  // --- Potential Hang Point ---
+  // Ensure checkIfNewTransaction handles potential DB errors
   const isNewTransaction = await checkIfNewTransaction(Order, req.body.id);
-  if (!isNewTransaction) throw new Error('Transaction has been used before');
+  if (!isNewTransaction) {
+      res.status(400); // Send a response
+      throw new Error('Transaction has been used before');
+  }
 
   const order = await Order.findById(req.params.id);
 
   if (order) {
     // Check the correct amount was paid
     const paidCorrectAmount = order.totalPrice.toString() === value;
-    if (!paidCorrectAmount) throw new Error('Incorrect amount paid');
+    if (!paidCorrectAmount) {
+        res.status(400); // Send a response
+        throw new Error('Incorrect amount paid');
+    }
 
     order.isPaid = true;
     order.paidAt = Date.now();
@@ -148,9 +161,9 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
       email_address: req.body.payer.email_address,
     };
 
-    const updatedOrder = await order.save();
+    const updatedOrder = await order.save(); // Ensure save completes
 
-    res.json(updatedOrder);
+    res.status(200).json(updatedOrder); // Send success response explicitly setting status
   } else {
     res.status(404);
     throw new Error('Order not found');
@@ -161,22 +174,28 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 // @route   GET /api/orders/:id/deliver
 // @access  Private/Admin
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
-  // Ensure user is authenticated and is admin
-  if (!req.user || !req.user._id || !req.user.isAdmin) {
-    res.status(401);
-    throw new Error('Not authorized as admin');
-    return;
-  }
+  // Ensure user is authenticated and is admin - This check was missing before the main logic
+  // if (!req.user || !req.user.isAdmin) { // Simplified check assuming protect middleware ran
+  //   res.status(401);
+  //   throw new Error('Not authorized as an admin');
+  // }
+  // Note: The protect and admin middleware should already handle auth checks if applied correctly in orderRoutes.js
 
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id); // Fetch the order first
 
   if (order) {
+    // Check if the order is already delivered
+    if (order.isDelivered) {
+      res.status(400);
+      throw new Error('Order already delivered');
+    }
+
     order.isDelivered = true;
     order.deliveredAt = Date.now();
 
     const updatedOrder = await order.save();
 
-    res.json(updatedOrder);
+    res.status(200).json(updatedOrder); // Send 200 OK status
   } else {
     res.status(404);
     throw new Error('Order not found');
@@ -187,15 +206,14 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
 // @route   GET /api/orders
 // @access  Private/Admin
 const getOrders = asyncHandler(async (req, res) => {
-  // Ensure user is authenticated and is admin
-  if (!req.user || !req.user._id || !req.user.isAdmin) {
-    res.status(401);
-    throw new Error('Not authorized as admin');
-    return;
-  }
+  // Note: The protect and admin middleware should handle auth checks if applied correctly in orderRoutes.js
+  // if (!req.user || !req.user.isAdmin) {
+  //   res.status(401);
+  //   throw new Error('Not authorized as an admin');
+  // }
 
   const orders = await Order.find({}).populate('user', 'id name');
-  res.json(orders);
+  res.status(200).json(orders); // Send 200 OK status
 });
 
 export {

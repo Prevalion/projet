@@ -21,6 +21,21 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    // Add to user schema
+    paymentMethods: [{
+      cardType: String,
+      last4: String,
+      expiry: String,
+      isDefault: Boolean
+    }],
+    twoFactorEnabled: {
+      type: Boolean,
+      default: false
+    },
+    twoFactorSecret: {
+      type: String,
+      select: false
+    }
   },
   {
     timestamps: true,

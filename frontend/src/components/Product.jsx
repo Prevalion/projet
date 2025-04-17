@@ -1,6 +1,6 @@
 import { Card, CardMedia, CardContent, Typography, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
-import Rating from './Rating';
+import Rating from './Rating.jsx';
 
 const Product = ({ product }) => {
   return (

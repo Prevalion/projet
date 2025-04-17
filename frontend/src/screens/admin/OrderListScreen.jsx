@@ -19,10 +19,43 @@ import CloseIcon from '@mui/icons-material/Close'; // MUI alternative for FaTime
 import Message from '../../components/Message'; // Keep or replace with MUI Alert
 import Loader from '../../components/Loader';
 import { useGetOrdersQuery } from '../../slices/ordersApiSlice';
-// Removed react-router-dom Link import as RouterLink is used
+import { useDeliverOrderMutation } from '../../slices/ordersApiSlice';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 
 const OrderListScreen = () => {
-  const { data: orders, isLoading, error } = useGetOrdersQuery();
+  const { data: orders, isLoading, error, refetch } = useGetOrdersQuery();
+  const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
+
+  const deliverHandler = async (orderId) => {
+    try {
+      await deliverOrder(orderId);
+      toast.success('Order marked as delivered');
+      refetch();
+    } catch (err) {
+      toast.error(err?.data?.message || err.error);
+    }
+  };
+
+  // In TableRow cells:
+  <TableCell>
+    {order.isDelivered ? (
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <CheckCircleIcon color="success" sx={{ mr: 1 }} />
+        {order.deliveredAt.substring(0, 10)}
+      </Box>
+    ) : (
+      <Button 
+        variant="outlined" 
+        size="small"
+        startIcon={<LocalShippingIcon />}
+        onClick={() => deliverHandler(order._id)}
+        disabled={loadingDeliver}
+      >
+        Deliver
+      </Button>
+    )}
+  </TableCell>
 
   return (
     <>

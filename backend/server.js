@@ -10,6 +10,7 @@ import userRoutes from './routes/userRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
 
 const port = process.env.PORT || 5000;
 
@@ -28,6 +29,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.get('/api/config/paypal', (req, res) =>
   res.send({ clientId: process.env.PAYPAL_CLIENT_ID })
@@ -55,3 +57,5 @@ app.use(errorHandler);
 app.listen(port, () =>
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`)
 );
+
+

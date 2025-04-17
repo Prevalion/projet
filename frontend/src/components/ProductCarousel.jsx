@@ -2,8 +2,8 @@ import React from 'react';
 import Carousel from 'react-material-ui-carousel'; // Import the carousel component
 import { Paper, Box, Typography, Link as MuiLink } from '@mui/material'; // Import Material UI components
 import { Link as RouterLink } from 'react-router-dom'; // Use RouterLink for navigation
-import Loader from './Loader';
-import Message from './Message';
+import Loader from './Loader.jsx';
+import Message from './Message.jsx';
 
 // Assuming products, isLoading, and error are passed as props
 const ProductCarousel = ({ products, isLoading, error }) => {

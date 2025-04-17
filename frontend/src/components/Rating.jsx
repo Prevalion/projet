@@ -1,7 +1,7 @@
 import { FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
 import { Box, Typography } from '@mui/material';
 
-const Rating = ({ value, text, color }) => {
+const Rating = ({ value, text, color = '#f8e825' }) => {
   return (
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <Box sx={{ display: 'flex', color: '#f8e825' }}>
@@ -58,10 +58,6 @@ const Rating = ({ value, text, color }) => {
       )}
     </Box>
   );
-};
-
-Rating.defaultProps = {
-  color: '#f8e825',
 };
 
 export default Rating;

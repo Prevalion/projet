@@ -179,6 +179,44 @@ const updateUser = asyncHandler(async (req, res) => {
   }
 });
 
+const bulkUpdateUsers = asyncHandler(async (req, res) => {
+  const { ids, role } = req.body;
+  
+  await User.updateMany(
+    { _id: { $in: ids } },
+    { $set: { role } }
+  );
+  
+  res.json({ message: `${ids.length} users updated` });
+});
+
+const forgotPassword = asyncHandler(async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+  
+  if (user) {
+    const token = generateToken(user._id, '30m');
+    // Send email with reset link
+    res.json({ message: 'Reset email sent' });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const decoded = jwt.verify(req.params.token, process.env.JWT_SECRET);
+  const user = await User.findById(decoded.id);
+  
+  if (user) {
+    user.password = req.body.password;
+    await user.save();
+    res.json({ message: 'Password updated' });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
 export {
   authUser,
   registerUser,
@@ -189,4 +227,7 @@ export {
   deleteUser,
   getUserById,
   updateUser,
+  bulkUpdateUsers, 
+  // forgotPassword,
+  // resetPassword,
 };

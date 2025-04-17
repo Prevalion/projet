@@ -21,11 +21,11 @@ import {
 import { ShoppingCart, Person, Menu as MenuIcon } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
-import { useLogoutMutation } from '../slices/usersApiSlice';
-import { logout } from '../slices/authSlice';
-import SearchBox from './SearchBox';
+import { useLogoutMutation } from '../slices/usersApiSlice.jsx';
+import { logout } from '../slices/authSlice.jsx';
+import SearchBox from './SearchBox.jsx';
 import logo from '../assets/logo.png';
-import { resetCart } from '../slices/cartSlice';
+import { resetCart } from '../slices/cartSlice.jsx';
 
 const Header = () => {
   const { cartItems } = useSelector((state) => state.cart);

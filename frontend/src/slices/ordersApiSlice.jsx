@@ -1,6 +1,7 @@
 import { apiSlice } from './apiSlice.jsx';
 import { ORDERS_URL, PAYPAL_URL } from '../constants.jsx';
 
+// Remove PayPal related endpoints
 export const orderApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     createOrder: builder.mutation({
@@ -16,19 +17,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       }),
       keepUnusedDataFor: 5,
     }),
-    payOrder: builder.mutation({
-      query: ({ orderId, details }) => ({
-        url: `${ORDERS_URL}/${orderId}/pay`,
-        method: 'PUT',
-        body: details,
-      }),
-    }),
-    getPaypalClientId: builder.query({
-      query: () => ({
-        url: PAYPAL_URL,
-      }),
-      keepUnusedDataFor: 5,
-    }),
+    // Remove getPaypalClientId endpoint
     getMyOrders: builder.query({
       query: () => ({
         url: `${ORDERS_URL}/mine`,

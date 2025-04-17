@@ -2,7 +2,6 @@ import asyncHandler from '../middleware/asyncHandler.js';
 import Order from '../models/orderModel.js';
 import Product from '../models/productModel.js';
 import { calcPrices } from '../utils/calcPrices.js';
-import { verifyPayPalPayment, checkIfNewTransaction } from '../utils/paypal.js';
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -116,54 +115,23 @@ const getOrderById = asyncHandler(async (req, res) => {
 // @desc    Update order to paid
 // @route   PUT /api/orders/:id/pay
 // @access  Private
+// Remove PayPal imports and related code
+// Update updateOrderToPaid function to handle credit card payments
 const updateOrderToPaid = asyncHandler(async (req, res) => {
-  // Ensure user is authenticated
-  if (!req.user || !req.user._id) {
-    res.status(401);
-    throw new Error('Not authorized, invalid user data');
-    // No return needed here as throw exits the function
-  }
-
-  // Verify the payment was made to PayPal before marking the order as paid
-  // --- Potential Hang Point ---
-  // Ensure verifyPayPalPayment has proper error handling and timeouts
-  const { verified, value } = await verifyPayPalPayment(req.body.id);
-  if (!verified) {
-      res.status(400); // Send a response even if verification fails
-      throw new Error('Payment not verified');
-  }
-
-  // Check if this transaction has been used before
-  // --- Potential Hang Point ---
-  // Ensure checkIfNewTransaction handles potential DB errors
-  const isNewTransaction = await checkIfNewTransaction(Order, req.body.id);
-  if (!isNewTransaction) {
-      res.status(400); // Send a response
-      throw new Error('Transaction has been used before');
-  }
-
   const order = await Order.findById(req.params.id);
 
   if (order) {
-    // Check the correct amount was paid
-    const paidCorrectAmount = order.totalPrice.toString() === value;
-    if (!paidCorrectAmount) {
-        res.status(400); // Send a response
-        throw new Error('Incorrect amount paid');
-    }
-
     order.isPaid = true;
     order.paidAt = Date.now();
     order.paymentResult = {
-      id: req.body.id,
-      status: req.body.status,
-      update_time: req.body.update_time,
-      email_address: req.body.payer.email_address,
+      id: req.body.paymentId, // Add payment ID from your payment processor
+      status: 'Completed',
+      update_time: new Date().toISOString(),
+      email_address: req.user.email,
     };
 
-    const updatedOrder = await order.save(); // Ensure save completes
-
-    res.status(200).json(updatedOrder); // Send success response explicitly setting status
+    const updatedOrder = await order.save();
+    res.status(200).json(updatedOrder);
   } else {
     res.status(404);
     throw new Error('Order not found');

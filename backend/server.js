@@ -31,12 +31,6 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-// Remove PayPal route
-// Delete this route:
-// app.get('/api/config/paypal', (req, res) =>
-//   res.send({ clientId: process.env.PAYPAL_CLIENT_ID })
-// );
-
 if (process.env.NODE_ENV === 'production') {
   const __dirname = path.resolve();
   app.use('/uploads', express.static('/var/data/uploads'));

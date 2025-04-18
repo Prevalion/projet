@@ -17,6 +17,13 @@ export const orderApiSlice = apiSlice.injectEndpoints({
       }),
       keepUnusedDataFor: 5,
     }),
+    payOrder: builder.mutation({
+      query: ({ orderId, details }) => ({
+        url: `${ORDERS_URL}/${orderId}/pay`,
+        method: 'PUT',
+        body: details, // Send payment details (like paymentId) from payment provider
+      }),
+    }),
     // Remove getPaypalClientId endpoint
     getMyOrders: builder.query({
       query: () => ({
@@ -44,7 +51,7 @@ export const {
   useCreateOrderMutation,
   useGetOrderDetailsQuery,
   usePayOrderMutation,
-  useGetPaypalClientIdQuery,
+  // useGetPaypalClientIdQuery, // Keep commented out or remove if not used
   useGetMyOrdersQuery,
   useGetOrdersQuery,
   useDeliverOrderMutation,

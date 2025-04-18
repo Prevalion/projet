@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom'; // Renamed Link
 import { toast } from 'react-toastify';
-import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js'; // Added PayPal imports
+// Removed PayPal imports
+// import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 // Removed react-bootstrap imports: Button, Row, Col, ListGroup, Image, Card
 // import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap';
 import {
@@ -25,8 +26,9 @@ import Loader from '../components/Loader';
 // Updated imports for order API slice
 import {
   useCreateOrderMutation,
-  usePayOrderMutation, // Added payOrder mutation
-  useGetPaypalClientIdQuery, // Corrected PayPal client ID query import
+  // Removed unused PayPal hooks
+  // usePayOrderMutation,
+  // useGetPaypalClientIdQuery,
 } from '../slices/ordersApiSlice';
 import { clearCartItems } from '../slices/cartSlice';
 
@@ -35,111 +37,60 @@ const PlaceOrderScreen = () => {
   const dispatch = useDispatch();
 
   const cart = useSelector((state) => state.cart);
+  const { userInfo } = useSelector((state) => state.auth); // Get user info
 
-  const [createOrder, { isLoading: loadingCreateOrder, error: createOrderError }] = useCreateOrderMutation(); // Renamed isLoading and error
-  const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation(); // Added payOrder hook
-  const { data: paypal, isLoading: loadingPayPal, error: errorPayPal } = useGetPaypalClientIdQuery(); // Corrected PayPal client ID hook call
+  const [createOrder, { isLoading: loadingCreateOrder, error: createOrderError }] = useCreateOrderMutation();
+  // Removed PayPal hooks
+  // const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+  // const { data: paypal, isLoading: loadingPayPal, error: errorPayPal } = useGetPaypalClientIdQuery();
+  // const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
 
-  const [{ isPending }, paypalDispatch] = usePayPalScriptReducer(); // Added PayPal script reducer
+  // Removed PayPal useEffect
+  // useEffect(() => {
+  //   if (!errorPayPal && !loadingPayPal && paypal.clientId) { ... }
+  // }, [errorPayPal, loadingPayPal, paypal, paypalDispatch, cart.paymentMethod]);
 
   useEffect(() => {
-    if (!errorPayPal && !loadingPayPal && paypal.clientId) {
-      const loadPaypalScript = async () => {
-        paypalDispatch({
-          type: 'resetOptions',
-          value: {
-            'client-id': paypal.clientId,
-            currency: 'USD',
-          },
-        });
-        paypalDispatch({ type: 'setLoadingStatus', value: 'pending' });
-      };
-      if (cart.paymentMethod === 'PayPal' && !window.paypal) {
-        loadPaypalScript();
-      }
+    // Redirect to login if not logged in
+    if (!userInfo) {
+      navigate('/login');
+      return; // Stop further checks if redirecting
     }
-  }, [errorPayPal, loadingPayPal, paypal, paypalDispatch, cart.paymentMethod]);
-
-  useEffect(() => {
+    // Redirect if shipping address is missing
     if (!cart.shippingAddress.address) {
       navigate('/shipping');
-    } else if (!cart.paymentMethod) {
+    }
+    // Redirect if payment method is missing
+    else if (!cart.paymentMethod) {
       navigate('/payment');
     }
-  }, [cart.paymentMethod, cart.shippingAddress.address, navigate]);
+  }, [userInfo, cart.paymentMethod, cart.shippingAddress.address, navigate]); // Add userInfo to dependency array
 
   const placeOrderHandler = async () => {
-    // This handler is now primarily for non-PayPal orders or as a fallback
-    // PayPal orders are initiated via the PayPalButtons component
-    if (cart.paymentMethod !== 'PayPal') {
-      try {
-        const res = await createOrder({
-          orderItems: cart.cartItems,
-          shippingAddress: cart.shippingAddress,
-          paymentMethod: cart.paymentMethod,
-          itemsPrice: cart.itemsPrice,
-          shippingPrice: cart.shippingPrice,
-          taxPrice: cart.taxPrice,
-          totalPrice: cart.totalPrice,
-        }).unwrap();
-        dispatch(clearCartItems());
-        navigate(`/order/${res._id}`);
-      } catch (err) {
-        toast.error(err?.data?.message || err?.error || 'An unexpected error occurred');
-      }
+    // Simplified: always try to create the order
+    try {
+      const res = await createOrder({
+        orderItems: cart.cartItems,
+        shippingAddress: cart.shippingAddress,
+        paymentMethod: cart.paymentMethod, // Will be 'Credit Card'
+        itemsPrice: cart.itemsPrice,
+        shippingPrice: cart.shippingPrice,
+        taxPrice: cart.taxPrice,
+        totalPrice: cart.totalPrice,
+      }).unwrap();
+      dispatch(clearCartItems());
+      // Navigate to the order screen, payment happens there now
+      navigate(`/order/${res._id}`);
+      toast.success('Order placed successfully! Proceed to payment.'); // Updated toast message
+    } catch (err) {
+      toast.error(err?.data?.message || err?.error || 'Failed to place order');
     }
   };
 
-  // --- PayPal Button Handlers ---
-  function onApprove(data, actions) {
-    return actions.order.capture().then(async function (details) {
-      try {
-        // First, create the order in our backend
-        const createdOrder = await createOrder({
-          orderItems: cart.cartItems,
-          shippingAddress: cart.shippingAddress,
-          paymentMethod: cart.paymentMethod,
-          itemsPrice: cart.itemsPrice,
-          shippingPrice: cart.shippingPrice,
-          taxPrice: cart.taxPrice,
-          totalPrice: cart.totalPrice,
-        }).unwrap();
-
-        // Then, mark the order as paid using the PayPal details
-        await payOrder({ orderId: createdOrder._id, details }).unwrap();
-        dispatch(clearCartItems());
-        navigate(`/order/${createdOrder._id}`);
-        toast.success('Order placed and payment successful!');
-      } catch (err) {
-        toast.error(err?.data?.message || err.error || 'Payment failed');
-      }
-    });
-  }
-
-  function onError(err) {
-    toast.error(err?.message || 'PayPal Checkout onError');
-  }
-
-  function createPayPalOrder(data, actions) {
-    // This function is called when the PayPal button is clicked
-    // It should return the order ID created on PayPal's side
-    // We create the order details here based on the cart
-    return actions.order
-      .create({
-        purchase_units: [
-          {
-            amount: {
-              currency_code: 'USD', // Ensure currency matches script options
-              value: cart.totalPrice,
-            },
-          },
-        ],
-      })
-      .then((orderID) => {
-        return orderID;
-      });
-  }
-  // --- End PayPal Button Handlers ---
+  // Removed PayPal Button Handlers
+  // function onApprove(data, actions) { ... }
+  // function onError(err) { ... }
+  // function createPayPalOrder(data, actions) { ... }
 
   return (
     <>
@@ -166,7 +117,7 @@ const PlaceOrderScreen = () => {
                 <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 500 }}>Payment Method</Typography>
                 <Typography variant="body1">
                   <strong>Method: </strong>
-                  {cart.paymentMethod}
+                  {cart.paymentMethod} {/* This will now display "Credit Card" */}
                 </Typography>
               </Paper>
             </ListItem>
@@ -263,43 +214,22 @@ const PlaceOrderScreen = () => {
                   </ListItem>
                 )}
 
-                {/* Conditional rendering for Place Order Button or PayPal Buttons */}
-                {cart.paymentMethod === 'PayPal' ? (
-                  <ListItem disablePadding sx={{ pt: 2 }}>
-                    {loadingPay && <Loader />} {/* Show loader while paying */}
-                    {isPending ? (
-                      <Loader />
-                    ) : errorPayPal ? (
-                      <Message variant='danger'>{errorPayPal?.data?.message || errorPayPal.error}</Message>
-                    ) : (
-                      <Box sx={{ width: '100%' }}>
-                        <PayPalButtons
-                          style={{ layout: 'vertical' }}
-                          createOrder={createPayPalOrder}
-                          onApprove={onApprove}
-                          onError={onError}
-                          disabled={cart.cartItems.length === 0 || loadingCreateOrder || loadingPay}
-                        ></PayPalButtons>
-                      </Box>
-                    )}
-                  </ListItem>
-                ) : (
-                  // Show standard Place Order button for other methods
-                  <ListItem disablePadding sx={{ pt: 2 }}>
-                    <Button
-                      type='button'
-                      variant="contained"
-                      color="primary"
-                      fullWidth
-                      disabled={cart.cartItems.length === 0 || loadingCreateOrder}
-                      onClick={placeOrderHandler}
-                      sx={{ padding: '10px 0', fontWeight: 500 }}
-                    >
-                      Place Order
-                      {loadingCreateOrder && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
-                    </Button>
-                  </ListItem>
-                )}
+                {/* Removed conditional rendering for PayPal */}
+                {/* Always show the Place Order button */}
+                <ListItem disablePadding sx={{ pt: 2 }}>
+                  <Button
+                    type='button'
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    disabled={cart.cartItems.length === 0 || loadingCreateOrder}
+                    onClick={placeOrderHandler}
+                    sx={{ padding: '10px 0', fontWeight: 500 }}
+                  >
+                    Place Order
+                    {loadingCreateOrder && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
+                  </Button>
+                </ListItem>
               </List>
             </CardContent>
           </Card>

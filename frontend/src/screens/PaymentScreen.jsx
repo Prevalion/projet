@@ -32,6 +32,25 @@ const PaymentScreen = () => {
 
   const dispatch = useDispatch();
 
+  const handleNumericInputChange = (setter) => (e) => {
+    const value = e.target.value;
+    // Allow only digits
+    if (/^\d*$/.test(value)) {
+      setter(value);
+    }
+  };
+
+  // Basic MM/YY formatting - you might want a more robust library for full validation
+  const handleExpiryChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length > 2) {
+      // Add slash after MM
+      value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    }
+    setExpiryDate(value);
+  };
+
+
   const submitHandler = (e) => {
     e.preventDefault();
     
@@ -64,8 +83,14 @@ const PaymentScreen = () => {
             label="Card Number"
             variant="outlined"
             value={cardNumber}
-            onChange={(e) => setCardNumber(e.target.value)}
+            // Use the numeric input handler
+            onChange={handleNumericInputChange(setCardNumber)}
             required
+            inputProps={{
+              inputMode: 'numeric', // Hint for mobile keyboards
+              pattern: '[0-9]*',    // Basic pattern validation
+              maxLength: 19,        // Max length for card numbers (incl. spaces if formatted)
+            }}
           />
 
           <Grid container spacing={2}>
@@ -75,9 +100,14 @@ const PaymentScreen = () => {
                 margin="normal"
                 label="Expiry Date (MM/YY)"
                 variant="outlined"
+                placeholder="MM/YY" // Add placeholder
                 value={expiryDate}
-                onChange={(e) => setExpiryDate(e.target.value)}
+                // Use the expiry date handler
+                onChange={handleExpiryChange}
                 required
+                inputProps={{
+                  maxLength: 5, // MM/YY format
+                }}
               />
             </Grid>
             <Grid item xs={6}>
@@ -86,10 +116,16 @@ const PaymentScreen = () => {
                 margin="normal"
                 label="CVC"
                 variant="outlined"
-                type="password"
+                type="password" // Keep as password for masking
                 value={cvc}
-                onChange={(e) => setCvc(e.target.value)}
+                // Use the numeric input handler
+                onChange={handleNumericInputChange(setCvc)}
                 required
+                inputProps={{
+                  inputMode: 'numeric',
+                  pattern: '[0-9]*',
+                  maxLength: 4, // Max CVC length
+                }}
               />
             </Grid>
           </Grid>
@@ -100,7 +136,7 @@ const PaymentScreen = () => {
             label="Cardholder Name"
             variant="outlined"
             value={cardHolderName}
-            onChange={(e) => setCardHolderName(e.target.value)}
+            onChange={(e) => setCardHolderName(e.target.value)} // No change needed here
             required
           />
 

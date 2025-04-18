@@ -5,29 +5,42 @@ import User from '../models/userModel.js';
 // User must be authenticated
 const protect = asyncHandler(async (req, res, next) => {
   let token;
-  
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+
+  // Read JWT from the 'jwt' cookie
+  token = req.cookies.jwt;
+
+  if (!token) {
+    // Fallback: Read JWT from Authorization header (Bearer token)
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer ')
+    ) {
+      try {
+        token = req.headers.authorization.split(' ')[1];
+      } catch (error) {
+        console.error(error);
+        res.status(401);
+        throw new Error('Not authorized, token failed');
+      }
+    }
+  }
+
+
+  if (token) {
     try {
-      token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      req.user = await User.findById(decoded.id).select('-password');
-      
+      req.user = await User.findById(decoded.userId).select('-password');
       if (!req.user) {
         res.status(401);
         throw new Error('User not found');
       }
-      
       next();
     } catch (error) {
       console.error(error);
       res.status(401);
       throw new Error('Not authorized, token failed');
     }
-  }
-
-  // If token was not found in the header after the initial check
-  if (!token) {
+  } else {
     res.status(401);
     throw new Error('Not authorized, no token');
   }

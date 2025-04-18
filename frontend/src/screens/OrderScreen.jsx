@@ -1,29 +1,30 @@
 import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-// Removed react-bootstrap imports: Row, Col, ListGroup, Image, Card, Button
 import {
-  Grid, // Replaces Row, Col
-  List, // Replaces ListGroup
-  ListItem, // Replaces ListGroup.Item
-  Box, // Used for layout and Image replacement
-  Typography, // Used for text elements
-  Button, // Replaces react-bootstrap Button
-  Card, // Replaces react-bootstrap Card
-  CardContent, // Added for MUI Card structure
-  Paper, // Used to wrap list items for better styling
-  CircularProgress, // Used for loading states within buttons
-  Alert, // Replaces Message component for consistency if needed
+  Grid,
+  List,
+  ListItem,
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  Paper,
+  CircularProgress,
+  Alert, // Use Alert for messages
+  Divider, // Added for visual separation
 } from '@mui/material';
-import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+// Removed PayPal imports:
+// import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Message from '../components/Message'; // Keep or replace with MUI Alert
 import Loader from '../components/Loader';
 import {
-  useDeliverOrderMutation,
   useGetOrderDetailsQuery,
-  useGetPaypalClientIdQuery,
-  usePayOrderMutation,
+  usePayOrderMutation, // Keep this
+  // useGetPaypalClientIdQuery, // Removed
+  useDeliverOrderMutation,
 } from '../slices/ordersApiSlice';
 
 const OrderScreen = () => {
@@ -36,82 +37,40 @@ const OrderScreen = () => {
     error,
   } = useGetOrderDetailsQuery(orderId);
 
-  const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+  const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation(); // Keep mutation hook
+
+  // Removed PayPal related state and hooks:
+  // const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
+  // const { data: paypal, isLoading: loadingPayPal, error: errorPayPal } = useGetPaypalClientIdQuery(); // Removed
 
   const [deliverOrder, { isLoading: loadingDeliver }] =
     useDeliverOrderMutation();
 
   const { userInfo } = useSelector((state) => state.auth);
 
-  const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
+  // Removed useEffect for loading PayPal script:
+  // useEffect(() => { ... loadPaypalScript logic ... }, [order, paypal, paypalDispatch, loadingPayPal, errorPayPal]);
 
-  const {
-    data: paypal,
-    isLoading: loadingPayPal,
-    error: errorPayPal,
-  } = useGetPaypalClientIdQuery();
+  // Removed PayPal button handlers: onApprove, onApproveTest, onError, createOrder
 
-  useEffect(() => {
-    if (!errorPayPal && !loadingPayPal && paypal.clientId) {
-      const loadPaypalScript = async () => {
-        paypalDispatch({
-          type: 'resetOptions',
-          value: {
-            'client-id': paypal.clientId,
-            currency: 'USD',
-          },
-        });
-        paypalDispatch({ type: 'setLoadingStatus', value: 'pending' });
-      };
-      if (order && !order.isPaid) {
-        if (!window.paypal) {
-          loadPaypalScript();
-        }
-      }
+  // --- New Handler for "Mark as Paid" Button ---
+  const markAsPaidHandler = async () => {
+    try {
+      await payOrder({ orderId, details: { payer: {} } }).unwrap(); // Send minimal details
+      refetch(); // Refetch order details to update UI
+      toast.success('Order marked as paid');
+    } catch (err) {
+      toast.error(err?.data?.message || err.error || 'Failed to mark as paid');
     }
-  }, [errorPayPal, loadingPayPal, order, paypal, paypalDispatch]);
+  };
+  // --- End New Handler ---
 
-  function onApprove(data, actions) {
-    return actions.order.capture().then(async function (details) {
-      try {
-        await payOrder({ orderId, details });
-        refetch();
-        toast.success('Order is paid');
-      } catch (err) {
-        toast.error(err?.data?.message || err.error);
-      }
-    });
-  }
-
-  // async function onApproveTest() {
-  //   await payOrder({ orderId, details: { payer: {} } });
-  //   refetch();
-  //   toast.success('Order is paid');
-  // }
-
-  function onError(err) {
-    toast.error(err.message);
-  }
-
-  function createOrder(data, actions) {
-    return actions.order
-      .create({
-        purchase_units: [
-          {
-            amount: { value: order.totalPrice },
-          },
-        ],
-      })
-      .then((orderID) => {
-        return orderID;
-      });
-  }
 
   const deliverHandler = async () => {
     try {
       await deliverOrder(orderId);
       refetch();
-      toast.success('Order delivered');
+      toast.success('Order marked as delivered');
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
@@ -120,188 +79,138 @@ const OrderScreen = () => {
   return isLoading ? (
     <Loader />
   ) : error ? (
-    // Consider using MUI Alert here for consistency
-    <Message variant='danger'>{error?.data?.message || error?.error}</Message>
+    // Use MUI Alert for consistency
+    <Alert severity="error">{error?.data?.message || error.error}</Alert>
   ) : (
     <>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+      <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
         Order {order._id}
       </Typography>
-      {/* Replaced Row with Grid container */}
       <Grid container spacing={4}>
-        {/* Replaced Col md={8} with Grid item */}
         <Grid item md={8}>
-          {/* Replaced ListGroup with List */}
-          <List sx={{ width: '100%', '& .MuiListItem-root': { p: 0 } }}>
-            {/* Shipping Section */}
-            <ListItem sx={{ mb: 3 }}>
-              <Paper elevation={1} sx={{ p: 3, width: '100%' }}>
-                <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 500 }}>Shipping</Typography>
-                <Typography variant="body1" sx={{ mb: 0.5 }}><strong>Name:</strong> {order.user.name}</Typography>
-                <Typography variant="body1" sx={{ mb: 0.5 }}>
-                  <strong>Email:</strong> <Link href={`mailto:${order.user.email}`} sx={{ color: 'primary.main', textDecoration: 'none' }}>{order.user.email}</Link>
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  <strong>Address: </strong>
-                  {order.shippingAddress.address}, {order.shippingAddress.city}{' '}
-                  {order.shippingAddress.postalCode},{' '}
-                  {order.shippingAddress.country}
-                </Typography>
-                {order.isDelivered ? (
-                  // Consider using MUI Alert
-                  <Message variant='success'>Delivered on {order.deliveredAt}</Message>
-                ) : (
-                  // Consider using MUI Alert
-                  <Message variant='danger'>Not Delivered</Message>
-                )}
-              </Paper>
+          <List component={Paper} elevation={0} sx={{ border: '1px solid #eee', borderRadius: 1 }}>
+            <ListItem sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+              <Typography variant="h6" gutterBottom>Shipping</Typography>
+              <Typography><strong>Name:</strong> {order.user.name}</Typography>
+              <Typography><strong>Email:</strong> <a href={`mailto:${order.user.email}`}>{order.user.email}</a></Typography>
+              <Typography>
+                <strong>Address: </strong>
+                {order.shippingAddress.address}, {order.shippingAddress.city}{' '}
+                {order.shippingAddress.postalCode},{' '}
+                {order.shippingAddress.country}
+              </Typography>
+              {order.isDelivered ? (
+                <Alert severity="success" sx={{ mt: 1, width: '100%' }}>Delivered on {order.deliveredAt?.substring(0, 10)}</Alert>
+              ) : (
+                <Alert severity="warning" sx={{ mt: 1, width: '100%' }}>Not Delivered</Alert>
+              )}
             </ListItem>
-
-            {/* Payment Method Section */}
-            <ListItem sx={{ mb: 3 }}>
-              <Paper elevation={1} sx={{ p: 3, width: '100%' }}>
-                <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 500 }}>Payment Method</Typography>
-                <Typography variant="body1" sx={{ mb: 2 }}><strong>Method:</strong> {order.paymentMethod}</Typography>
-                {order.isPaid ? (
-                  // Consider using MUI Alert
-                  <Message variant='success'>Paid on {order.paidAt}</Message>
-                ) : (
-                  // Consider using MUI Alert
-                  <Message variant='danger'>Not Paid</Message>
-                )}
-              </Paper>
+            <Divider />
+            <ListItem sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
+              <Typography variant="h6" gutterBottom>Payment Method</Typography>
+              <Typography><strong>Method:</strong> {order.paymentMethod}</Typography>
+              {order.isPaid ? (
+                <Alert severity="success" sx={{ mt: 1, width: '100%' }}>Paid on {order.paidAt?.substring(0, 10)}</Alert>
+              ) : (
+                <Alert severity="warning" sx={{ mt: 1, width: '100%' }}>Not Paid</Alert>
+              )}
             </ListItem>
-
-            {/* Order Items Section */}
+            <Divider />
             <ListItem>
-              <Paper elevation={1} sx={{ p: 3, width: '100%' }}>
-                <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 500 }}>Order Items</Typography>
+              <List sx={{ width: '100%' }}>
+                <Typography variant="h6" gutterBottom>Order Items</Typography>
                 {order.orderItems.length === 0 ? (
-                  // Consider using MUI Alert
-                  <Message>Order is empty</Message>
+                  <Alert severity="info">Order is empty</Alert>
                 ) : (
-                  <List sx={{ width: '100%' }}>
-                    {order.orderItems.map((item, index) => (
-                      <ListItem key={index} divider sx={{ py: 2 }}>
-                        {/* Replaced inner Row with Grid container */}
-                        <Grid container alignItems="center" spacing={2}>
-                          {/* Replaced Col with Grid item */}
-                          <Grid item xs={12} sm={2} sx={{ display: 'flex', justifyContent: 'center' }}>
-                            {/* Replaced Image with Box component="img" */}
-                            <Box
-                              component="img"
-                              src={item.image}
-                              alt={item.name}
-                              sx={{
-                                height: 50,
-                                width: 'auto',
-                                maxWidth: '100%',
-                                objectFit: 'contain',
-                                background: '#fafafa',
-                                border: '1px solid #eee',
-                                borderRadius: 1,
-                              }}
-                            />
-                          </Grid>
-                          <Grid item xs={12} sm={5}>
-                            <Typography
-                              component={Link}
-                              to={`/product/${item.product}`}
-                              variant="body1"
-                              sx={{ fontWeight: 500, color: 'text.primary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
-                            >
-                              {item.name}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs={12} sm={5}>
-                            <Typography variant="body1">
-                              {item.qty} x ${item.price} = ${item.qty * item.price}
-                            </Typography>
-                          </Grid>
+                  order.orderItems.map((item, index) => (
+                    <ListItem key={index} disablePadding sx={{ py: 1 }}>
+                      <Grid container alignItems="center" spacing={1}>
+                        <Grid item md={1}>
+                          <Box
+                            component="img"
+                            src={item.image}
+                            alt={item.name}
+                            sx={{ width: '100%', height: 'auto', borderRadius: 1 }}
+                          />
                         </Grid>
-                      </ListItem>
-                    ))}
-                  </List>
+                        <Grid item>
+                          <Typography component={Link} to={`/product/${item.product}`} sx={{ textDecoration: 'none', color: 'inherit' }}>
+                            {item.name}
+                          </Typography>
+                        </Grid>
+                        <Grid item md sx={{ textAlign: 'right' }}>
+                          <Typography>{item.qty} x ${item.price} = ${item.qty * item.price}</Typography>
+                        </Grid>
+                      </Grid>
+                    </ListItem>
+                  ))
                 )}
-              </Paper>
+              </List>
             </ListItem>
           </List>
         </Grid>
-
-        {/* Replaced Col md={4} with Grid item */}
         <Grid item md={4}>
-          {/* Replaced react-bootstrap Card with MUI Card */}
-          <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
+          <Card elevation={1}>
             <CardContent>
-              <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600 }}>Order Summary</Typography>
-              <List>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <Grid container>
-                    <Grid item xs={6}><Typography>Items</Typography></Grid>
-                    <Grid item xs={6}><Typography align="right">${order.itemsPrice}</Typography></Grid>
-                  </Grid>
+              <Typography variant="h5" gutterBottom>Order Summary</Typography>
+              <List disablePadding>
+                <ListItem sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography>Items</Typography>
+                  <Typography>${order.itemsPrice}</Typography>
                 </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <Grid container>
-                    <Grid item xs={6}><Typography>Shipping</Typography></Grid>
-                    <Grid item xs={6}><Typography align="right">${order.shippingPrice}</Typography></Grid>
-                  </Grid>
+                <ListItem sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography>Shipping</Typography>
+                  <Typography>${order.shippingPrice}</Typography>
                 </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <Grid container>
-                    <Grid item xs={6}><Typography>Tax</Typography></Grid>
-                    <Grid item xs={6}><Typography align="right">${order.taxPrice}</Typography></Grid>
-                  </Grid>
+                <ListItem sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography>Tax</Typography>
+                  <Typography>${order.taxPrice}</Typography>
                 </ListItem>
-                <ListItem disablePadding sx={{ py: 1, borderTop: '1px solid #eee', mt: 1 }}>
-                  <Grid container>
-                    <Grid item xs={6}><Typography sx={{ fontWeight: 'bold' }}>Total</Typography></Grid>
-                    <Grid item xs={6}><Typography align="right" sx={{ fontWeight: 'bold' }}>${order.totalPrice}</Typography></Grid>
-                  </Grid>
+                <Divider sx={{ my: 1 }} />
+                <ListItem sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography variant="h6">Total</Typography>
+                  <Typography variant="h6">${order.totalPrice}</Typography>
                 </ListItem>
 
+                {/* --- Payment Button Logic --- */}
                 {!order.isPaid && (
-                  <ListItem disablePadding sx={{ pt: 2 }}>
-                    {loadingPay && <Loader />}
-                    {isPending ? (
-                      <Loader />
-                    ) : (
-                      <Box sx={{ width: '100%' }}>
-                        {/* <Button
-                          onClick={onApproveTest}
-                          style={{ marginBottom: '10px' }}
-                        >
-                          Test Pay Order
-                        </Button> */}
-                        <PayPalButtons
-                          createOrder={createOrder}
-                          onApprove={onApprove}
-                          onError={onError}
-                        ></PayPalButtons>
-                      </Box>
-                    )}
+                  <ListItem>
+                    {/* Removed PayPal loading state check */}
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      onClick={markAsPaidHandler}
+                      disabled={loadingPay} // Disable while processing
+                      sx={{ mt: 2 }}
+                    >
+                      {loadingPay ? <CircularProgress size={24} color="inherit" /> : 'Mark as Paid (Test)'}
+                    </Button>
                   </ListItem>
                 )}
+                {/* --- End Payment Button Logic --- */}
 
+
+                {/* --- Admin Deliver Button --- */}
                 {loadingDeliver && <Loader />}
-
                 {userInfo &&
                   userInfo.isAdmin &&
                   order.isPaid &&
                   !order.isDelivered && (
-                    <ListItem disablePadding sx={{ pt: 2 }}>
+                    <ListItem>
                       <Button
                         type='button'
                         variant="contained"
-                        color="primary"
+                        color="secondary"
                         fullWidth
                         onClick={deliverHandler}
-                        sx={{ padding: '10px 0', fontWeight: 500 }}
+                        sx={{ mt: 1 }}
                       >
                         Mark As Delivered
                       </Button>
                     </ListItem>
                   )}
+                {/* --- End Admin Deliver Button --- */}
               </List>
             </CardContent>
           </Card>

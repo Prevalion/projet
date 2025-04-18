@@ -115,23 +115,27 @@ const getOrderById = asyncHandler(async (req, res) => {
 // @desc    Update order to paid
 // @route   PUT /api/orders/:id/pay
 // @access  Private
-// Remove PayPal imports and related code
-// Update updateOrderToPaid function to handle credit card payments
 const updateOrderToPaid = asyncHandler(async (req, res) => {
+  // NOTE: This controller is simplified to allow marking as paid
+  // without specific payment provider details (like PayPal or Stripe).
+  // In a real application, you would verify payment details from req.body here.
+
   const order = await Order.findById(req.params.id);
 
   if (order) {
     order.isPaid = true;
     order.paidAt = Date.now();
+    // Optionally store generic payment result if needed, e.g., from a test button
     order.paymentResult = {
-      id: req.body.paymentId, // Add payment ID from your payment processor
-      status: 'Completed',
-      update_time: new Date().toISOString(),
-      email_address: req.user.email,
+      id: req.body.id || 'test-payment-id', // Use provided ID or a placeholder
+      status: req.body.status || 'COMPLETED', // Use provided status or a placeholder
+      update_time: req.body.update_time || Date.now().toString(),
+      email_address: req.body.payer?.email_address || req.user.email, // Use payer email or user email
     };
 
     const updatedOrder = await order.save();
-    res.status(200).json(updatedOrder);
+
+    res.json(updatedOrder);
   } else {
     res.status(404);
     throw new Error('Order not found');
@@ -188,7 +192,7 @@ export {
   addOrderItems,
   getMyOrders,
   getOrderById,
-  updateOrderToPaid,
+  updateOrderToPaid, // Ensure this is exported
   updateOrderToDelivered,
   getOrders,
 };

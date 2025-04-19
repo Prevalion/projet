@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Typography, LinearProgress } from '@mui/material';
+import { Grid, Typography, LinearProgress, Box, Paper } from '@mui/material';
 import { BarChart, PieChart } from '@mui/x-charts';
 import { useGetDashboardStatsQuery } from '../../slices/dashboardApiSlice';
 import { format } from 'date-fns';
@@ -7,16 +7,24 @@ import { format } from 'date-fns';
 const DashboardScreen = () => {
   const { data: stats, isLoading, error } = useGetDashboardStatsQuery();
 
-  const salesData = stats?.monthlySales.map((sale, index) => ({
-    month: format(new Date().setMonth(index), 'MMM'),
-    total: sale.total,
-  })) || [];
+  // Make sure we have valid data before creating chart data arrays
+  const salesData = stats && stats.monthlySales && stats.monthlySales.length > 0
+    ? stats.monthlySales.map((sale, index) => ({
+        month: format(new Date().setMonth(index), 'MMM'),
+        total: sale.total || 0,
+      }))
+    : Array(12).fill(0).map((_, index) => ({
+        month: format(new Date().setMonth(index), 'MMM'),
+        total: 0,
+      }));
 
-  const productDistribution = stats?.productCategories.map(category => ({
-    id: category._id,
-    label: category.name,
-    value: category.count,
-  })) || [];
+  const productDistribution = stats && stats.productCategories && stats.productCategories.length > 0
+    ? stats.productCategories.map(category => ({
+        id: category._id || `category-${Math.random()}`,
+        label: category.name || 'Unknown',
+        value: category.count || 0,
+      }))
+    : [{ id: 'no-data', label: 'No Data', value: 1 }];
 
   return (
     <Grid container spacing={3} sx={{ p: 3 }}>
@@ -42,7 +50,7 @@ const DashboardScreen = () => {
           <MetricCard
             title="Orders This Month"
             value={stats?.monthlyOrders || 0}
-            progress={(stats?.monthlyOrders / stats?.totalOrders) * 100 || 0}
+            progress={(stats?.monthlyOrders / (stats?.totalOrders || 1)) * 100 || 0}
             color="#FF9800"
           />
         </Grid>
@@ -50,7 +58,7 @@ const DashboardScreen = () => {
           <MetricCard
             title="Product Stock"
             value={stats?.lowStockProducts || 0}
-            progress={(stats?.lowStockProducts / stats?.totalProducts) * 100 || 0}
+            progress={(stats?.lowStockProducts / (stats?.totalProducts || 1)) * 100 || 0}
             color="#F44336"
             label="Low Stock Items"
           />
@@ -59,94 +67,104 @@ const DashboardScreen = () => {
 
       {/* Charts */}
       <Grid item xs={12} md={8}>
-        <Typography variant="h6" gutterBottom>Monthly Sales</Typography>
-        {isLoading ? <LinearProgress /> : (
-          <BarChart
-            dataset={salesData}
-            xAxis={[{ dataKey: 'month', scaleType: 'band' }]}
-            series={[{ dataKey: 'total', label: 'Revenue ($)' }]}
-            height={400}
-            margin={{ left: 70 }}
-          />
-        )}
+        <Paper sx={{ p: 2 }}>
+          <Typography variant="h6" gutterBottom>Monthly Sales</Typography>
+          {isLoading ? <LinearProgress /> : (
+            <Box sx={{ height: 400 }}>
+              {salesData.length > 0 && (
+                <BarChart
+                  dataset={salesData}
+                  xAxis={[{ dataKey: 'month', scaleType: 'band' }]}
+                  series={[{ dataKey: 'total', label: 'Revenue ($)' }]}
+                  height={350}
+                  margin={{ left: 70 }}
+                />
+              )}
+            </Box>
+          )}
+        </Paper>
       </Grid>
       
       <Grid item xs={12} md={4}>
-        <Typography variant="h6" gutterBottom>Product Categories</Typography>
-        {isLoading ? <LinearProgress /> : (
-          <PieChart
-            series={[{
-              data: productDistribution,
-              innerRadius: 30,
-              outerRadius: 100,
-              paddingAngle: 5,
-              cornerRadius: 5,
-            }]}
-            width={400}
-            height={300}
-            slotProps={{
-              legend: { hidden: true },
-            }}
-          />
-        )}
+        <Paper sx={{ p: 2 }}>
+          <Typography variant="h6" gutterBottom>Product Categories</Typography>
+          {isLoading ? <LinearProgress /> : (
+            <Box sx={{ height: 350, display: 'flex', justifyContent: 'center' }}>
+              {productDistribution.length > 0 && (
+                <PieChart
+                  series={[{
+                    data: productDistribution,
+                    innerRadius: 30,
+                    outerRadius: 100,
+                    paddingAngle: 5,
+                    cornerRadius: 5,
+                  }]}
+                  height={300}
+                  slotProps={{
+                    legend: { hidden: false },
+                  }}
+                />
+              )}
+            </Box>
+          )}
+        </Paper>
       </Grid>
 
       {/* Recent Activities */}
       <Grid item xs={12}>
-        <RecentActivities activities={stats?.recentActivities} />
+        <RecentActivities activities={stats?.recentActivities || []} />
       </Grid>
     </Grid>
   );
 };
 
 const MetricCard = ({ title, value, progress, color, label }) => (
-  <div style={{
-    backgroundColor: '#fff',
-    borderRadius: '8px',
-    padding: '16px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-  }}>
+  <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 1 }}>
     <Typography variant="subtitle2" color="textSecondary">{title}</Typography>
-    <Typography variant="h4" style={{ margin: '8px 0', color }}>
+    <Typography variant="h4" sx={{ my: 1, color }}>
       {value}
     </Typography>
-    <div style={{ display: 'flex', alignItems: 'center' }}>
+    <Box sx={{ display: 'flex', alignItems: 'center' }}>
       <LinearProgress
         variant="determinate"
-        value={progress}
-        style={{ flexGrow: 1, marginRight: '8px', height: '6px' }}
+        value={Math.min(Math.max(progress, 0), 100)} // Ensure progress is between 0-100
+        sx={{ flexGrow: 1, mr: 1, height: 6 }}
       />
       <Typography variant="body2">{label || `${Math.round(progress)}%`}</Typography>
-    </div>
-  </div>
+    </Box>
+  </Paper>
 );
 
 const RecentActivities = ({ activities }) => (
-  <div style={{ backgroundColor: '#fff', borderRadius: '8px', padding: '16px' }}>
+  <Paper sx={{ p: 2, borderRadius: 2 }}>
     <Typography variant="h6" gutterBottom>Recent Activities</Typography>
-    {activities?.map((activity, index) => (
-      <div key={index} style={{ 
-        display: 'flex',
-        alignItems: 'center',
-        padding: '8px 0',
-        borderBottom: index < activities.length - 1 ? '1px solid #eee' : 'none'
-      }}>
-        <div style={{
-          width: '8px',
-          height: '8px',
-          borderRadius: '50%',
-          backgroundColor: activity.type === 'order' ? '#4CAF50' : '#2196F3',
-          marginRight: '16px'
-        }} />
-        <Typography variant="body2" style={{ flexGrow: 1 }}>
-          {activity.message}
-        </Typography>
-        <Typography variant="caption" color="textSecondary">
-          {format(new Date(activity.timestamp), 'PPpp')}
-        </Typography>
-      </div>
-    )) || <Typography color="textSecondary">No recent activities</Typography>}
-  </div>
+    {activities && activities.length > 0 ? (
+      activities.map((activity, index) => (
+        <Box key={index} sx={{ 
+          display: 'flex',
+          alignItems: 'center',
+          py: 1,
+          borderBottom: index < activities.length - 1 ? '1px solid #eee' : 'none'
+        }}>
+          <Box sx={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            bgcolor: activity.type === 'order' ? '#4CAF50' : '#2196F3',
+            mr: 2
+          }} />
+          <Typography variant="body2" sx={{ flexGrow: 1 }}>
+            {activity.message}
+          </Typography>
+          <Typography variant="caption" color="textSecondary">
+            {activity.timestamp ? format(new Date(activity.timestamp), 'PPpp') : 'Unknown date'}
+          </Typography>
+        </Box>
+      ))
+    ) : (
+      <Typography color="textSecondary">No recent activities</Typography>
+    )}
+  </Paper>
 );
 
 export default DashboardScreen;

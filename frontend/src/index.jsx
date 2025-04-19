@@ -31,6 +31,7 @@ import ProductListScreen from './screens/admin/ProductListScreen.jsx';
 import ProductEditScreen from './screens/admin/ProductEditScreen.jsx';
 import UserListScreen from './screens/admin/UserListScreen.jsx';
 import UserEditScreen from './screens/admin/UserEditScreen.jsx';
+import DashboardScreen from './screens/admin/DashboardScreen.jsx'; // Import the DashboardScreen component
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -56,6 +57,7 @@ const router = createBrowserRouter(
       </Route>
       {/* Admin users */}
       <Route path='' element={<AdminRoute />}>
+        <Route path='/admin/dashboard' element={<DashboardScreen />} /> {/* Add the route for the dashboard */}
         <Route path='/admin/orderlist' element={<OrderListScreen />} />
         <Route path='/admin/productlist' element={<ProductListScreen />} />
         <Route

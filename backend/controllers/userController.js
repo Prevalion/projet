@@ -228,6 +228,6 @@ export {
   getUserById,
   updateUser,
   bulkUpdateUsers, 
-  // forgotPassword,
-  // resetPassword,
+  forgotPassword,
+  resetPassword,
 };

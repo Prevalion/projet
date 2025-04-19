@@ -12,6 +12,7 @@ import {
   TableRow,
   Paper, // Used for container styling
   Link as MuiLink, // MUI Link component
+  Box, // Added import for Box
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom'; // Renamed Link
 // import { FaTimes } from 'react-icons/fa'; // Replace with MUI Icon if needed
@@ -22,6 +23,7 @@ import { useGetOrdersQuery } from '../../slices/ordersApiSlice';
 import { useDeliverOrderMutation } from '../../slices/ordersApiSlice';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import { toast } from 'react-toastify'; // Added import for toast
 
 const OrderListScreen = () => {
   const { data: orders, isLoading, error, refetch } = useGetOrdersQuery();
@@ -37,25 +39,7 @@ const OrderListScreen = () => {
     }
   };
 
-  // In TableRow cells:
-  <TableCell>
-    {order.isDelivered ? (
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <CheckCircleIcon color="success" sx={{ mr: 1 }} />
-        {order.deliveredAt.substring(0, 10)}
-      </Box>
-    ) : (
-      <Button 
-        variant="outlined" 
-        size="small"
-        startIcon={<LocalShippingIcon />}
-        onClick={() => deliverHandler(order._id)}
-        disabled={loadingDeliver}
-      >
-        Deliver
-      </Button>
-    )}
-  </TableCell>
+  // Removed the misplaced TableCell block from here
 
   return (
     <>
@@ -104,11 +88,24 @@ const OrderListScreen = () => {
                       <CloseIcon sx={{ color: 'red' }} />
                     )}
                   </TableCell>
+                  {/* Updated DELIVERED TableCell */}
                   <TableCell>
                     {order.isDelivered ? (
-                      order.deliveredAt.substring(0, 10)
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <CheckCircleIcon color="success" sx={{ mr: 0.5 }} /> {/* Adjusted margin */}
+                        {order.deliveredAt.substring(0, 10)}
+                      </Box>
                     ) : (
-                      <CloseIcon sx={{ color: 'red' }} />
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<LocalShippingIcon />}
+                        onClick={() => deliverHandler(order._id)}
+                        disabled={loadingDeliver}
+                        sx={{ minWidth: 'auto', p: '2px 8px' }} // Adjust padding for smaller button
+                      >
+                        Deliver
+                      </Button>
                     )}
                   </TableCell>
                   <TableCell align="right">

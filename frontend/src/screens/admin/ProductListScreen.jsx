@@ -20,7 +20,8 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Link as RouterLink, useParams } from 'react-router-dom'; // Renamed Link
+// Import useNavigate
+import { Link as RouterLink, useParams, useNavigate } from 'react-router-dom'; // Renamed Link
 import Message from '../../components/Message'; // Keep or replace with MUI Alert
 import Loader from '../../components/Loader';
 import Paginate from '../../components/Paginate';
@@ -34,6 +35,7 @@ import { toast } from 'react-toastify';
 
 const ProductListScreen = () => {
   const { pageNumber } = useParams();
+  const navigate = useNavigate(); // Initialize navigate
 
   const { data, isLoading, error, refetch } = useGetProductsQuery({
     pageNumber,
@@ -60,9 +62,12 @@ const ProductListScreen = () => {
   const createProductHandler = async () => {
     if (window.confirm('Are you sure you want to create a new product?')) {
       try {
-        await createProduct();
-        toast.success('Product created'); // Added success toast
-        refetch();
+        // Call the mutation and wait for the result
+        const createdProduct = await createProduct().unwrap();
+        // No need to refetch if navigating away immediately
+        refetch(); 
+        // Navigate to the edit screen for the new product
+        navigate(`/admin/product/${createdProduct._id}/edit`);
       } catch (err) {
         toast.error(err?.data?.message || err.error);
       }
@@ -154,9 +159,9 @@ const ProductListScreen = () => {
               </TableBody>
             </Table>
           </TableContainer>
-          {/* Paginate component remains, ensure it's compatible or update if needed */}
-          <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
-            <Paginate pages={data.pages} page={data.page} isAdmin={true} />
+          {/* Paginate component */}
+          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+             <Paginate pages={data.pages} page={data.page} isAdmin={true} />
           </Box>
         </>
       )}

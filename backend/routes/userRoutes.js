@@ -9,8 +9,9 @@ import {
   deleteUser,
   getUserById,
   updateUser,
-  bulkUpdateUsers, // Add bulkUpdateUsers here
-  forgotPassword, // <-- Import forgotPassword
+  bulkUpdateUsers,
+  forgotPassword,
+  resetPassword,
 } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 
@@ -19,7 +20,8 @@ const router = express.Router();
 router.route('/').post(registerUser).get(protect, admin, getUsers);
 router.post('/auth', authUser);
 router.post('/logout', logoutUser);
-router.post('/forgot-password', forgotPassword); // <-- Add this route definition
+router.post('/forgot-password', forgotPassword);
+router.put('/reset-password/:token', resetPassword);
 router
   .route('/profile')
   .get(protect, getUserProfile)

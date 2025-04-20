@@ -68,6 +68,15 @@ const theme = createTheme({
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
         },
       },
+      breakpoints: {
+        values: {
+          xs: 0,
+          sm: 600,
+          md: 960,
+          lg: 1280,
+          xl: 1920,
+        },
+      },
     },
   },
 });

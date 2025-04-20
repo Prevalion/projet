@@ -190,31 +190,62 @@ const bulkUpdateUsers = asyncHandler(async (req, res) => {
   res.json({ message: `${ids.length} users updated` });
 });
 
+// @desc    Request password reset
+// @route   POST /api/users/forgot-password
+// @access  Public
 const forgotPassword = asyncHandler(async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
-  
-  if (user) {
-    const token = generateToken(user._id, '30m');
-    // Send email with reset link
-    res.json({ message: 'Reset email sent' });
-  } else {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
     res.status(404);
     throw new Error('User not found');
   }
+
+  // Generate reset token
+  const resetToken = crypto.randomBytes(20).toString('hex');
+  
+  // Set token expiry (1 hour)
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpire = Date.now() + 3600000; // 1 hour
+  
+  await user.save();
+
+  // In a production environment, you would send an email with the reset link
+  // For now, we'll just return the token in the response
+  res.json({ 
+    message: 'Password reset email sent',
+    resetToken // In production, don't return this token in the response
+  });
 });
 
+// @desc    Reset password
+// @route   PUT /api/users/reset-password/:token
+// @access  Public
 const resetPassword = asyncHandler(async (req, res) => {
-  const decoded = jwt.verify(req.params.token, process.env.JWT_SECRET);
-  const user = await User.findById(decoded.id);
-  
-  if (user) {
-    user.password = req.body.password;
-    await user.save();
-    res.json({ message: 'Password updated' });
-  } else {
-    res.status(404);
-    throw new Error('User not found');
+  const { password } = req.body;
+  const { token } = req.params;
+
+  // Find user by reset token and check if token is still valid
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpire: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    res.status(400);
+    throw new Error('Invalid or expired token');
   }
+
+  // Set new password
+  user.password = password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+  
+  await user.save();
+
+  res.json({ message: 'Password reset successful' });
 });
 
 export {
@@ -227,7 +258,7 @@ export {
   deleteUser,
   getUserById,
   updateUser,
-  bulkUpdateUsers, 
+  bulkUpdateUsers,
   forgotPassword,
-  resetPassword,
+  resetPassword
 };

@@ -5,6 +5,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './components/Header.jsx';
 import Footer from './components/Footer.jsx';
 import { logout } from './slices/authSlice.jsx';
+import ResponsiveContainer from './components/ResponsiveContainer.jsx';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -28,9 +29,9 @@ const App = () => {
       <ToastContainer />
       <Header />
       <main style={{ paddingTop: '24px', paddingBottom: '24px' }}>
-        <Container>
+        <ResponsiveContainer>
           <Outlet />
-        </Container>
+        </ResponsiveContainer>
       </main>
       <Footer />
     </>

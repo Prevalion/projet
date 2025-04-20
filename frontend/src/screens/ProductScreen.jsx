@@ -25,6 +25,8 @@ import Loader from '../components/Loader';
 import Message from '../components/Message';
 import Meta from '../components/Meta';
 import { addToCart } from '../slices/cartSlice';
+import ReviewForm from '../components/ReviewForm';
+import ReviewList from '../components/ReviewList';
 
 const ProductScreen = () => {
   const { id: productId } = useParams();
@@ -52,18 +54,22 @@ const ProductScreen = () => {
     navigate('/cart');
   };
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
+  // Modify submitHandler to accept review data directly
+  const submitHandler = async ({ rating, comment }) => {
+    // Remove e.preventDefault(); - This should be handled in ReviewForm
     try {
       await createReview({
         productId,
-        rating: Number(rating),
-        comment,
+        rating: Number(rating), // Use the passed rating
+        comment,             // Use the passed comment
       }).unwrap();
-      refetch();
-      toast.success('Review created successfully');
+      refetch(); // Refetch product details to show the new review
+      toast.success('Review submitted successfully');
+      // Optionally reset local state if it was used by the old inline form
+      // setRating(0); 
+      // setComment('');
     } catch (err) {
-      toast.error(err?.data?.message || err.error);
+      toast.error(err?.data?.message || err.error || 'Failed to submit review');
     }
   };
 
@@ -206,84 +212,37 @@ const ProductScreen = () => {
             </Grid>
           </Grid>
 
-          <Grid container sx={{ mt: 4 }}>
-            <Grid item md={6}>
-              <Typography variant="h5" gutterBottom>Reviews</Typography>
-              {product.reviews.length === 0 && <Message>No Reviews</Message>}
-
-              <List>
-                {product.reviews.map((review) => (
-                  <ListItem key={review._id} sx={{ display: 'block' }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                      {review.name}
-                    </Typography>
-                    <Rating value={review.rating} />
-                    <Typography variant="body2" sx={{ my: 1 }}>
-                      {review.createdAt.substring(0, 10)}
-                    </Typography>
-                    <Typography variant="body1">
-                      {review.comment}
-                    </Typography>
-                    <Divider sx={{ my: 2 }} />
-                  </ListItem>
-                ))}
-
-                <ListItem sx={{ display: 'block' }}>
-                  <Typography variant="h6" gutterBottom>Write a Customer Review</Typography>
-                  {loadingProductReview && <Loader />}
-
-                  {userInfo ? (
-                    <Box component="form" onSubmit={submitHandler}>
-                      <Box sx={{ my: 2 }}>
-                        <Typography variant="subtitle1">Rating</Typography>
-                        <TextField
-                          select
-                          fullWidth
-                          required
-                          value={rating}
-                          onChange={(e) => setRating(e.target.value)}
-                          size="small"
-                        >
-                          <MenuItem value="">Select...</MenuItem>
-                          <MenuItem value="1">1 - Poor</MenuItem>
-                          <MenuItem value="2">2 - Fair</MenuItem>
-                          <MenuItem value="3">3 - Good</MenuItem>
-                          <MenuItem value="4">4 - Very Good</MenuItem>
-                          <MenuItem value="5">5 - Excellent</MenuItem>
-                        </TextField>
-                      </Box>
-
-                      <Box sx={{ my: 2 }}>
-                        <Typography variant="subtitle1">Comment</Typography>
-                        <TextField
-                          multiline
-                          rows={3}
-                          fullWidth
-                          required
-                          value={comment}
-                          onChange={(e) => setComment(e.target.value)}
-                        />
-                      </Box>
-
-                      <Button
-                        disabled={loadingProductReview}
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                      >
-                        Submit
-                      </Button>
-                    </Box>
-                  ) : (
-                    <Message>
-                      Please <Link to='/login'>sign in</Link> to write a review
-                    </Message>
-                  )}
-                </ListItem>
-              </List>
-            </Grid>
-          </Grid>
+          {/* The entire Grid container below is removed */}
+          {/* <Grid container sx={{ mt: 4 }}> ... </Grid> */}
+          {/* End of removed section */}
         </>
+      )}
+      
+      {/* Product Reviews Section (This section remains) */}
+      {/* Ensure product is defined before accessing reviews */}
+      {product && (
+        <Grid container spacing={4} sx={{ mt: 4 }}>
+          <Grid item xs={12}>
+            <Typography variant="h5" component="h2" gutterBottom>
+              Reviews
+            </Typography>
+            
+            {userInfo ? (
+              <ReviewForm 
+                productId={productId}
+                onReviewSubmitted={submitHandler} // Pass the updated handler
+                isLoading={loadingProductReview}
+              />
+            ) : (
+              <Message severity="info">
+                Please <Link to="/login">sign in</Link> to write a review
+              </Message>
+            )}
+            
+            {/* Pass reviews safely, defaulting to an empty array */}
+            <ReviewList reviews={product?.reviews || []} />
+          </Grid>
+        </Grid>
       )}
     </>
   );

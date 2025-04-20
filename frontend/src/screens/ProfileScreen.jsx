@@ -27,12 +27,13 @@ import Loader from '../components/Loader';
 import { useProfileMutation } from '../slices/usersApiSlice';
 import { useGetMyOrdersQuery } from '../slices/ordersApiSlice';
 import { setCredentials } from '../slices/authSlice';
+import Meta from '../components/Meta'; // Import Meta component
 // Removed react-router-dom Link import as RouterLink is used
 
 // Add these imports
-import { 
+import {
   useForgotPasswordMutation,
-  useResetPasswordMutation 
+  useResetPasswordMutation
 } from '../slices/usersApiSlice';
 
 const ProfileScreen = () => {
@@ -88,6 +89,7 @@ const ProfileScreen = () => {
   return (
     // Replaced Row with Grid container
     <Grid container spacing={4}>
+      <Meta title="User Profile" /> {/* Added Meta component */}
       {/* Replaced Col md={3} with Grid item */}
       <Grid item md={3}>
         <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
@@ -277,5 +279,3 @@ const ProfileScreen = () => {
 };
 
 export default ProfileScreen;
-
-// Removed hook calls and JSX from outside the component

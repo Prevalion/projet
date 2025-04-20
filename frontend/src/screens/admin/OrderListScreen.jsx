@@ -24,6 +24,7 @@ import { useDeliverOrderMutation } from '../../slices/ordersApiSlice';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { toast } from 'react-toastify'; // Added import for toast
+import Meta from '../../components/Meta'; // Import Meta component
 
 const OrderListScreen = () => {
   const { data: orders, isLoading, error, refetch } = useGetOrdersQuery();
@@ -43,6 +44,7 @@ const OrderListScreen = () => {
 
   return (
     <>
+      <Meta title="Admin: Order List" /> {/* Added Meta component */}
       {/* Replaced h1 with Typography */}
       <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
         Orders

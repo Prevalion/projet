@@ -17,6 +17,7 @@ import FormContainer from '../components/FormContainer';
 import { useLoginMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { toast } from 'react-toastify';
+import Meta from '../components/Meta'; // Import Meta component
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -52,6 +53,7 @@ const LoginScreen = () => {
 
   return (
     <FormContainer>
+      <Meta title="Login" /> {/* Added Meta component */}
       <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
         Sign In
       </Typography>

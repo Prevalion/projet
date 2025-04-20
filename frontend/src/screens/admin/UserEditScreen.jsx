@@ -21,6 +21,7 @@ import {
   useGetUserDetailsQuery,
   useUpdateUserMutation,
 } from '../../slices/usersApiSlice';
+import Meta from '../../components/Meta'; // Import Meta component
 
 const UserEditScreen = () => {
   const { id: userId } = useParams();
@@ -61,6 +62,7 @@ const UserEditScreen = () => {
 
   return (
     <>
+      <Meta title="Admin: Edit User" /> {/* Added Meta component */}
       {/* Replaced react-bootstrap Link with MUI Button + RouterLink */}
       <Button component={RouterLink} to='/admin/userlist' variant="outlined" sx={{ mb: 3 }}>
         Go Back

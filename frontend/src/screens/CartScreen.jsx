@@ -17,6 +17,7 @@ import {
 import { Delete } from '@mui/icons-material'; // Changed from FaTrash
 import Message from '../components/Message'; // Assuming this component is adaptable or you'll replace it with MUI Alert if needed
 import { addToCart, removeFromCart } from '../slices/cartSlice';
+import Meta from '../components/Meta'; // Import Meta component
 
 const CartScreen = () => {
   const navigate = useNavigate();
@@ -40,6 +41,7 @@ const CartScreen = () => {
   return (
     // Replaced Row with Grid container
     <Grid container spacing={4}>
+      <Meta title="Shopping Cart" /> {/* Added Meta component */}
       {/* Replaced Col md={8} with Grid item */}
       <Grid item md={8}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>

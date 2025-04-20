@@ -3,6 +3,7 @@ import { Grid, Typography, LinearProgress, Box, Paper } from '@mui/material';
 import { BarChart, PieChart } from '@mui/x-charts';
 import { useGetDashboardStatsQuery } from '../../slices/dashboardApiSlice';
 import { format } from 'date-fns';
+import Meta from '../../components/Meta'; // Import Meta component
 
 const DashboardScreen = () => {
   const { data: stats, isLoading, error } = useGetDashboardStatsQuery();
@@ -28,12 +29,13 @@ const DashboardScreen = () => {
 
   return (
     <Grid container spacing={3} sx={{ p: 3 }}>
+      <Meta title="Admin: Dashboard" /> {/* Added Meta component */}
       {/* Key Metrics */}
       <Grid item container spacing={3} xs={12}>
         <Grid item xs={12} md={3}>
           <MetricCard
             title="Total Revenue"
-            value={`$${stats?.totalRevenue || 0}`}
+            value={`$${(stats?.totalRevenue || 0).toFixed(3)}`}           
             progress={100}
             color="#4CAF50"
           />
@@ -124,14 +126,13 @@ const MetricCard = ({ title, value, progress, color, label }) => (
     <Typography variant="h4" sx={{ my: 1, color }}>
       {value}
     </Typography>
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <LinearProgress
-        variant="determinate"
-        value={Math.min(Math.max(progress, 0), 100)} // Ensure progress is between 0-100
-        sx={{ flexGrow: 1, mr: 1, height: 6 }}
-      />
-      <Typography variant="body2">{label || `${Math.round(progress)}%`}</Typography>
-    </Box>
+    {/* Removed the Box containing LinearProgress and percentage Typography */}
+    {/* If a specific label like "Low Stock Items" is provided, display it */}
+    {label && (
+      <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+        {label}
+      </Typography>
+    )}
   </Paper>
 );
 

@@ -27,6 +27,7 @@ import {
 } from '../../slices/usersApiSlice';
 import { toast } from 'react-toastify';
 import { Link as RouterLink } from 'react-router-dom'; // Renamed Link
+import Meta from '../../components/Meta'; // Import Meta component
 
 const UserListScreen = () => {
   const { data: users, refetch, isLoading, error } = useGetUsersQuery();
@@ -47,6 +48,7 @@ const UserListScreen = () => {
 
   return (
     <>
+      <Meta title="Admin: User List" /> {/* Added Meta component */}
       {/* Replaced h1 with Typography */}
       <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
         Users

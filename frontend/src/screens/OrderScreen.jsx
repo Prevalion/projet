@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
   Grid,
@@ -14,8 +14,7 @@ import {
   Alert, // Use Alert for messages
   Divider, // Added for visual separation
 } from '@mui/material';
-// Removed PayPal imports:
-// import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Message from '../components/Message'; // Keep or replace with MUI Alert
@@ -26,6 +25,7 @@ import {
   // useGetPaypalClientIdQuery, // Removed
   useDeliverOrderMutation,
 } from '../slices/ordersApiSlice';
+import Meta from '../components/Meta';
 
 const OrderScreen = () => {
   const { id: orderId } = useParams();
@@ -39,19 +39,13 @@ const OrderScreen = () => {
 
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation(); // Keep mutation hook
 
-  // Removed PayPal related state and hooks:
-  // const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
-  // const { data: paypal, isLoading: loadingPayPal, error: errorPayPal } = useGetPaypalClientIdQuery(); // Removed
+
 
   const [deliverOrder, { isLoading: loadingDeliver }] =
     useDeliverOrderMutation();
 
   const { userInfo } = useSelector((state) => state.auth);
 
-  // Removed useEffect for loading PayPal script:
-  // useEffect(() => { ... loadPaypalScript logic ... }, [order, paypal, paypalDispatch, loadingPayPal, errorPayPal]);
-
-  // Removed PayPal button handlers: onApprove, onApproveTest, onError, createOrder
 
   // --- New Handler for "Mark as Paid" Button ---
   const markAsPaidHandler = async () => {

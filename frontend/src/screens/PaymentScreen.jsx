@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import FormContainer from '../components/FormContainer';
 import CheckoutSteps from '../components/CheckoutSteps';
 import { savePaymentMethod } from '../slices/cartSlice';
+import Meta from '../components/Meta'; // Import Meta component
 
 const PaymentScreen = () => {
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ const PaymentScreen = () => {
 
   return (
     <FormContainer>
+      <Meta title="Payment Method" /> {/* Added Meta component */}
       <CheckoutSteps step1 step2 step3 />
       <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
         Payment Details

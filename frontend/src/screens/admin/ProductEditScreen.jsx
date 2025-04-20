@@ -20,6 +20,7 @@ import {
   useUpdateProductMutation,
   useUploadProductImageMutation,
 } from '../../slices/productsApiSlice';
+import Meta from '../../components/Meta'; // Import Meta component
 
 const ProductEditScreen = () => {
   const { id: productId } = useParams();
@@ -96,6 +97,7 @@ const ProductEditScreen = () => {
 
   return (
     <>
+      <Meta title="Admin: Edit Product" /> {/* Added Meta component */}
       {/* Replaced react-bootstrap Link with MUI Link + RouterLink */}
       <Button component={RouterLink} to='/admin/productlist' variant="outlined" sx={{ mb: 3 }}>
         Go Back

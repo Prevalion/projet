@@ -189,23 +189,31 @@ const Header = () => {
                     onClose={handleCloseAdminMenu}
                     keepMounted
                   >
-                    <MenuItem 
-                      component={Link} 
-                      to="/admin/productlist" 
+                    {/* Add Dashboard Link */}
+                    <MenuItem
+                      component={Link}
+                      to="/admin/dashboard"
+                      onClick={handleCloseAdminMenu}
+                    >
+                      Dashboard
+                    </MenuItem>
+                    <MenuItem
+                      component={Link}
+                      to="/admin/productlist"
                       onClick={handleCloseAdminMenu}
                     >
                       Products
                     </MenuItem>
-                    <MenuItem 
-                      component={Link} 
-                      to="/admin/orderlist" 
+                    <MenuItem
+                      component={Link}
+                      to="/admin/orderlist"
                       onClick={handleCloseAdminMenu}
                     >
                       Orders
                     </MenuItem>
-                    <MenuItem 
-                      component={Link} 
-                      to="/admin/userlist" 
+                    <MenuItem
+                      component={Link}
+                      to="/admin/userlist"
                       onClick={handleCloseAdminMenu}
                     >
                       Users
@@ -258,6 +266,10 @@ const Header = () => {
                     <>
                       <ListItem>
                         <ListItemText primary="ADMIN" sx={{ fontWeight: 'bold' }} />
+                      </ListItem>
+                      {/* Add Dashboard Link for mobile */}
+                      <ListItem button component={Link} to="/admin/dashboard">
+                        <ListItemText primary="Dashboard" />
                       </ListItem>
                       <ListItem button component={Link} to="/admin/productlist">
                         <ListItemText primary="Products" />

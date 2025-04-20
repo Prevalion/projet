@@ -18,6 +18,7 @@ import FormContainer from '../components/FormContainer';
 import { useRegisterMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { toast } from 'react-toastify';
+import Meta from '../components/Meta'; // Import Meta component
 
 const RegisterScreen = () => {
   const [name, setName] = useState('');
@@ -60,6 +61,7 @@ const RegisterScreen = () => {
 
   return (
     <FormContainer>
+      <Meta title="Register" /> {/* Added Meta component */}
       {/* Replaced h1 with Typography */}
       <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
         Register

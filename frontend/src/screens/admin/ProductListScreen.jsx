@@ -31,6 +31,7 @@ import {
   useCreateProductMutation,
 } from '../../slices/productsApiSlice';
 import { toast } from 'react-toastify';
+import Meta from '../../components/Meta'; // Import Meta component
 // Removed react-router-dom Link import as RouterLink is used
 
 const ProductListScreen = () => {
@@ -76,6 +77,7 @@ const ProductListScreen = () => {
 
   return (
     <>
+      <Meta title="Admin: Product List" /> {/* Added Meta component */}
       {/* Replaced Row/Col with Grid */}
       <Grid container alignItems="center" sx={{ mb: 3 }}>
         <Grid item xs>

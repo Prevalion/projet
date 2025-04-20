@@ -31,6 +31,7 @@ import {
   // useGetPaypalClientIdQuery,
 } from '../slices/ordersApiSlice';
 import { clearCartItems } from '../slices/cartSlice';
+import Meta from '../components/Meta'; // Import Meta component
 
 const PlaceOrderScreen = () => {
   const navigate = useNavigate();
@@ -94,6 +95,7 @@ const PlaceOrderScreen = () => {
 
   return (
     <>
+      <Meta title="Place Order" /> {/* Added Meta component */}
       <CheckoutSteps step1 step2 step3 step4 />
       <Grid container spacing={4} sx={{ mt: 2 }}>
         <Grid item md={8}>
@@ -222,14 +224,15 @@ const PlaceOrderScreen = () => {
                     variant="contained"
                     color="primary"
                     fullWidth
-                    disabled={cart.cartItems.length === 0 || loadingCreateOrder}
+                    disabled={cart.cartItems === 0 || loadingCreateOrder}
                     onClick={placeOrderHandler}
-                    sx={{ padding: '10px 0', fontWeight: 500 }}
+                    sx={{ mt: 2, py: 1.5, fontWeight: 500 }}
                   >
                     Place Order
                     {loadingCreateOrder && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
                   </Button>
                 </ListItem>
+                {/* Removed PayPal Button Section */}
               </List>
             </CardContent>
           </Card>

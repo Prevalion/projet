@@ -2,6 +2,7 @@ import asyncHandler from '../middleware/asyncHandler.js';
 import Order from '../models/orderModel.js';
 import Product from '../models/productModel.js';
 import { calcPrices } from '../utils/calcPrices.js';
+import { sendOrderConfirmation } from '../utils/emailService.js'; // Add this import
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -72,6 +73,15 @@ const addOrderItems = asyncHandler(async (req, res) => {
     });
 
     const createdOrder = await order.save();
+
+    // Send order confirmation email
+    try {
+      await sendOrderConfirmation(createdOrder, req.user);
+      console.log('Order confirmation email sent');
+    } catch (emailError) {
+      console.error('Failed to send order confirmation email:', emailError);
+      // Don't fail the order creation if email fails
+    }
 
     res.status(201).json(createdOrder);
   } catch (error) {

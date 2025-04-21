@@ -1,6 +1,8 @@
 import asyncHandler from '../middleware/asyncHandler.js';
 import generateToken from '../utils/generateToken.js';
 import User from '../models/userModel.js';
+import crypto from 'crypto'; // Add this import
+import { sendPasswordResetEmail } from '../utils/emailService.js'; // Add this import
 
 // @desc    Auth user & get token
 // @route   POST /api/users/auth
@@ -194,13 +196,22 @@ const bulkUpdateUsers = asyncHandler(async (req, res) => {
 // @route   POST /api/users/forgot-password
 // @access  Public
 const forgotPassword = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+  // Extract the email string correctly from the nested object
+  const email = req.body.email?.email; // Access the nested email property
 
-  const user = await User.findOne({ email });
+  if (!email) {
+    res.status(400);
+    throw new Error('Email is required');
+  }
+
+  const user = await User.findOne({ email }); // Use the extracted email string
 
   if (!user) {
-    res.status(404);
-    throw new Error('User not found');
+    // It's generally better not to reveal if an email exists or not for security
+    // Send a generic success message regardless
+    console.log(`Password reset requested for non-existent email: ${email}`);
+    res.status(200).json({ message: 'If an account with that email exists, a password reset link has been sent.' });
+    return;
   }
 
   // Generate reset token
@@ -212,12 +223,26 @@ const forgotPassword = asyncHandler(async (req, res) => {
   
   await user.save();
 
-  // In a production environment, you would send an email with the reset link
-  // For now, we'll just return the token in the response
-  res.json({ 
-    message: 'Password reset email sent',
-    resetToken // In production, don't return this token in the response
-  });
+  // Get frontend URL from environment or use default
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const resetUrl = `${frontendUrl}/reset-password`;
+
+  try {
+    // Send password reset email
+    await sendPasswordResetEmail(user.email, resetToken, resetUrl);
+    
+    res.json({ 
+      message: 'Password reset email sent'
+    });
+  } catch (error) {
+    console.error('Email error:', error);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+    
+    res.status(500);
+    throw new Error('Email could not be sent. Please try again later.');
+  }
 });
 
 // @desc    Reset password
@@ -226,6 +251,11 @@ const forgotPassword = asyncHandler(async (req, res) => {
 const resetPassword = asyncHandler(async (req, res) => {
   const { password } = req.body;
   const { token } = req.params;
+
+  if (!password || !token) {
+    res.status(400);
+    throw new Error('Please provide a password and token');
+  }
 
   // Find user by reset token and check if token is still valid
   const user = await User.findOne({
@@ -242,7 +272,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.password = password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
-  
+
   await user.save();
 
   res.json({ message: 'Password reset successful' });

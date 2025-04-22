@@ -32,6 +32,7 @@ import ProductEditScreen from './screens/admin/ProductEditScreen.jsx';
 import UserListScreen from './screens/admin/UserListScreen.jsx';
 import UserEditScreen from './screens/admin/UserEditScreen.jsx';
 import DashboardScreen from './screens/admin/DashboardScreen.jsx'; // Import the DashboardScreen component
+import PasswordRecoveryScreen from './screens/PasswordRecoveryScreen.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -47,6 +48,8 @@ const router = createBrowserRouter(
       <Route path='/cart' element={<CartScreen />} />
       <Route path='/login' element={<LoginScreen />} />
       <Route path='/register' element={<RegisterScreen />} />
+      {/* Add the password recovery route here */}
+      {<Route path='/password-recovery' element={<PasswordRecoveryScreen />} />}
       {/* Registered users */}
       <Route path='' element={<PrivateRoute />}>
         <Route path='/shipping' element={<ShippingScreen />} />
@@ -64,8 +67,8 @@ const router = createBrowserRouter(
           path='/admin/productlist/:pageNumber'
           element={<ProductListScreen />}
         />
-        <Route path='/admin/userlist' element={<UserListScreen />} />
         <Route path='/admin/product/:id/edit' element={<ProductEditScreen />} />
+        <Route path='/admin/userlist' element={<UserListScreen />} />
         <Route path='/admin/user/:id/edit' element={<UserEditScreen />} />
       </Route>
     </Route>
@@ -73,17 +76,16 @@ const router = createBrowserRouter(
 );
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
-      <HelmetProvider>
+    <HelmetProvider>
+      <Provider store={store}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <RouterProvider router={router} />
         </ThemeProvider>
-      </HelmetProvider>
-    </Provider>
+      </Provider>
+    </HelmetProvider>
   </React.StrictMode>
 );
 

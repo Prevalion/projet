@@ -32,8 +32,8 @@ function sendEmail({ recipient_email, OTP }) {
     var transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: process.env.MY_EMAIL, // Make sure MY_EMAIL is in your .env
-        pass: process.env.MY_PASSWORD, // Make sure MY_PASSWORD is in your .env
+        user: process.env.EMAIL_USER, // Make sure MY_EMAIL is in your .env
+        pass: process.env.EMAIL_PASS, // Make sure MY_PASSWORD is in your .env
       },
     });
 

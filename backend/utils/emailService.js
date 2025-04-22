@@ -7,7 +7,6 @@ dotenv.config();
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
-  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -35,11 +34,7 @@ export const sendEmail = async (options) => {
 
     const info = await transporter.sendMail(mailOptions);
     console.log("Message sent: %s", info.messageId);
-    
-    // For Ethereal emails, return the preview URL
-    if (process.env.NODE_ENV === 'development') {
-      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-    }
+
     
     return info;
   } catch (error) {

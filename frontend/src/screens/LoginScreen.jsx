@@ -1,23 +1,21 @@
-import { useState, useEffect } from 'react';
-import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'; // Renamed Link
-// Removed react-bootstrap imports: Form, Button, Row, Col
-import {
-  Box, // Used for layout
-  Typography, // Used for text elements
-  Button, // Replaces react-bootstrap Button
-  TextField, // Replaces Form.Control
-  Grid, // Replaces Row, Col
-  Link, // MUI Link component
-  CircularProgress // Used for loading states
-} from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'; // Ensure RouterLink is imported
 import { useDispatch, useSelector } from 'react-redux';
-import Loader from '../components/Loader';
+// Import Grid, Typography, and Link from MUI if not already imported
+import {
+  Button,
+  TextField,
+  Typography,
+  Link,
+  Grid, // Add Grid import
+  CircularProgress,
+  Alert
+} from '@mui/material';
 import FormContainer from '../components/FormContainer';
-
 import { useLoginMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
-import { toast } from 'react-toastify';
-import Meta from '../components/Meta'; // Import Meta component
+import Meta from '../components/Meta';
+import { toast } from 'react-toastify'; // Import toast
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -26,7 +24,8 @@ const LoginScreen = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [login, { isLoading }] = useLoginMutation();
+  // Destructure error from the mutation result
+  const [login, { isLoading, error }] = useLoginMutation();
 
   const { userInfo } = useSelector((state) => state.auth);
 
@@ -47,71 +46,78 @@ const LoginScreen = () => {
       dispatch(setCredentials({ ...res }));
       navigate(redirect);
     } catch (err) {
-      toast.error(err?.data?.message || err.error);
+      // Use toast for displaying errors
+      toast.error(err?.data?.message || err.error || 'Login Failed');
     }
   };
 
   return (
     <FormContainer>
-      <Meta title="Login" /> {/* Added Meta component */}
-      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600 }}>
+      <Meta title='Login' />
+      <Typography variant="h4" component="h1" gutterBottom>
         Sign In
       </Typography>
 
-      {/* Replaced Form with Box component="form" */}
-      <Box component="form" onSubmit={submitHandler} sx={{ mt: 1 }}>
-        {/* Replaced Form.Group/Form.Control with TextField */}
+      {/* Display error message using the destructured error state */}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error?.data?.message || error.error || 'An error occurred'}</Alert>}
+
+      <form onSubmit={submitHandler}>
+        {/* Email Input */}
         <TextField
-          fullWidth
           margin="normal"
+          required
+          fullWidth
           id="email"
           label="Email Address"
-          type="email"
-          variant="outlined"
-          placeholder='Enter email'
+          name="email"
+          autoComplete="email"
+          autoFocus
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
         />
 
+        {/* Password Input */}
         <TextField
-          fullWidth
           margin="normal"
-          id="password"
+          required
+          fullWidth
+          name="password"
           label="Password"
           type="password"
-          variant="outlined"
-          placeholder='Enter password'
+          id="password"
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          required
         />
 
-        {/* Replaced react-bootstrap Button with MUI Button */}
+        {/* Submit Button */}
         <Button
           type="submit"
-          variant="contained"
-          color="primary"
           fullWidth
-          disabled={isLoading}
-          sx={{ mt: 3, mb: 2, py: 1.5, fontWeight: 500 }}
+          variant="contained"
+          sx={{ mt: 3, mb: 2 }}
+          disabled={isLoading} // Disable button when loading
         >
-          Sign In
-          {isLoading && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
+          {isLoading ? <CircularProgress size={24} /> : 'Sign In'} {/* Show loader */}
         </Button>
-
-        {/* Loader can be kept or integrated differently if needed */}
-        {/* {isLoading && <Loader />} */}
-      </Box>
+      </form>
 
       {/* Replaced Row/Col with Grid */}
-      <Grid container justifyContent="flex-start" sx={{ mt: 3 }}>
-        <Grid item>
-          <Typography variant="body2">
+      <Grid container justifyContent="space-between" alignItems="center" sx={{ mt: 3, py: 3 }}> {/* Replaced Row and added spacing/alignment */}
+        <Grid item> {/* Replaced Col */}
+          <Typography variant="body2"> {/* Added Typography for consistent styling */}
             New Customer?{' '}
             {/* Use MUI Link with RouterLink component */}
             <Link component={RouterLink} to={redirect ? `/register?redirect=${redirect}` : '/register'} variant="body2">
               Register
+            </Link>
+          </Typography>
+        </Grid>
+        <Grid item> {/* Replaced Col */}
+          <Typography variant="body2"> {/* Added Typography */}
+            {/* Use MUI Link with RouterLink component */}
+            <Link component={RouterLink} to="/password-recovery" variant="body2">
+              Forgot Password?
             </Link>
           </Typography>
         </Grid>

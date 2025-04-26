@@ -1,49 +1,50 @@
-import React, { useState } from 'react';
-import { Button, Box, InputBase } from '@mui/material';
-import { Search } from '@mui/icons-material';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Box, InputBase, Button } from '@mui/material';
+import { Search as SearchIcon } from '@mui/icons-material';
 
 const SearchBox = () => {
   const navigate = useNavigate();
-  const { keyword: urlKeyword } = useParams();
-
-  const [keyword, setKeyword] = useState(urlKeyword || '');
+  const [keyword, setKeyword] = useState('');
 
   const submitHandler = (e) => {
     e.preventDefault();
-    if (keyword) {
+    if (keyword.trim()) {
       navigate(`/search/${keyword.trim()}`);
       setKeyword('');
     } else {
-      navigate('/');
+      navigate('/search');
     }
   };
 
   return (
-    <Box component="form" onSubmit={submitHandler} sx={{ 
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: 'white',
-      borderRadius: '4px',
-      padding: '0 10px',
-      width: '300px'
-    }}>
+    <Box 
+      component="form" 
+      onSubmit={submitHandler}
+      sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        backgroundColor: 'white', 
+        borderRadius: '4px',
+        padding: '0 10px',
+        width: '300px'
+      }}
+    >
       <InputBase
-        name="q"
-        onChange={(e) => setKeyword(e.target.value)}
-        value={keyword}
         placeholder="Search Products..."
+        value={keyword}
+        onChange={(e) => setKeyword(e.target.value)}
         sx={{ ml: 1, flex: 1, color: 'black' }}
         inputProps={{ 'aria-label': 'search products' }}
       />
       <Button 
-        type="submit" 
+        type="submit"
         variant="contained" 
         color="secondary" 
         size="small"
         sx={{ height: '32px', minWidth: '60px' }}
       >
-        Search
+        <SearchIcon fontSize="small" />
       </Button>
     </Box>
   );

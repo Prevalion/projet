@@ -5,31 +5,69 @@ import Product from '../models/productModel.js';
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-  const pageSize = process.env.PAGINATION_LIMIT || 8;
+  const pageSize = 8;
   const page = Number(req.query.pageNumber) || 1;
-  
-  // Ensure page number is valid and positive
-  const validPage = page > 0 ? page : 1;
-  
-  const keyword = req.query.keyword
-    ? {
-        name: {
-          $regex: req.query.keyword,
-          $options: 'i',
-        },
-      }
-    : {};
 
-  const count = await Product.countDocuments({ ...keyword });
-  
-  // Calculate skip with validation to ensure it's never negative
-  const skip = (validPage - 1) * pageSize;
-  
-  const products = await Product.find({ ...keyword })
-    .limit(Number(pageSize))
-    .skip(skip);
+  // Build the filter object
+  const filter = {};
 
-  res.json({ products, page: validPage, pages: Math.ceil(count / pageSize) });
+  // Keyword filter for name or description
+  if (req.query.keyword) {
+    filter.$or = [
+      { name: { $regex: req.query.keyword, $options: 'i' } },
+      { description: { $regex: req.query.keyword, $options: 'i' } }
+    ];
+  }
+
+  // Category filter
+  if (req.query.category) {
+    filter.category = { $regex: req.query.category, $options: 'i' };
+  }
+
+  // Price range filter
+  if (req.query.price) {
+    const [min, max] = req.query.price.split('-').map(Number);
+    if (min && max) {
+      filter.price = { $gte: min, $lte: max };
+    } else if (min && !max) {
+      filter.price = { $gte: min };
+    } else if (!min && max) {
+      filter.price = { $lte: max };
+    }
+  }
+
+  // Rating filter
+  if (req.query.rating) {
+    filter.rating = { $gte: Number(req.query.rating) };
+  }
+
+  // Sorting logic
+  let sortOptions = {};
+  if (req.query.sort) {
+    switch (req.query.sort) {
+      case 'price_asc':
+        sortOptions = { price: 1 }; // 1 for ascending
+        break;
+      case 'price_desc':
+        sortOptions = { price: -1 }; // -1 for descending
+        break;
+      case 'rating_desc':
+        sortOptions = { rating: -1 };
+        break;
+      // Add more cases if needed, e.g., 'name_asc', 'createdAt_desc'
+      default:
+        // Default sort or no sort if value is invalid/empty
+        sortOptions = {}; 
+    }
+  }
+
+  const count = await Product.countDocuments(filter);
+  const products = await Product.find(filter)
+    .sort(sortOptions) // Apply sorting here
+    .limit(pageSize)
+    .skip(pageSize * (page - 1));
+
+  res.json({ products, page, pages: Math.ceil(count / pageSize) });
 });
 
 // @desc    Fetch single product

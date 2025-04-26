@@ -1,28 +1,26 @@
 import React, { useState } from 'react';
-import { Box, Container } from '@mui/material';
-import RecoveryContext from '../context/RecoveryContext';
-import Login from '../components/recovery/Login';
-import OTPInput from '../components/recovery/OTPInput';
-import Reset from '../components/recovery/Reset';
-import Recovered from '../components/recovery/Recovered';
+import { Box, Container, Typography, TextField, Button, Card, CardContent, Alert } from '@mui/material';
+import { useForgotPasswordMutation } from '../slices/usersApiSlice';
+import { toast } from 'react-toastify';
 import Meta from '../components/Meta';
 
 const PasswordRecoveryScreen = () => {
-  const [page, setPage] = useState("login");
   const [email, setEmail] = useState('');
-  const [otp, setOTP] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
-  function NavigateComponents() {
-    if (page === "login") return <Login />;
-    if (page === "otp") return <OTPInput />;
-    if (page === "reset") return <Reset />;
-    return <Recovered />;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await forgotPassword({ email }).unwrap();
+      setEmailSent(true);
+    } catch (err) {
+      toast.error(err?.data?.message || err.error || 'An error occurred');
+    }
+  };
 
   return (
-    <RecoveryContext.Provider
-      value={{ page, setPage, otp, setOTP, setEmail, email }}
-    >
+    <>
       <Meta title="Password Recovery" />
       <Container maxWidth="lg">
         <Box
@@ -33,10 +31,46 @@ const PasswordRecoveryScreen = () => {
             minHeight: '70vh'
           }}
         >
-          <NavigateComponents />
+          <Card elevation={3} sx={{ maxWidth: 400, width: '100%', mt: 5 }}>
+            <CardContent sx={{ p: 4 }}>
+              <Typography variant="h5" component="h2" align="center" gutterBottom sx={{ mb: 4 }}>
+                Password Recovery
+              </Typography>
+              
+              {emailSent ? (
+                <Alert severity="success" sx={{ mb: 3 }}>
+                  If an account with that email exists, a password reset link has been sent.
+                </Alert>
+              ) : (
+                <Box component="form" onSubmit={handleSubmit}>
+                  <TextField
+                    fullWidth
+                    label="Email Address"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    margin="normal"
+                    variant="outlined"
+                  />
+                  
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    fullWidth
+                    disabled={isLoading}
+                    sx={{ mt: 3 }}
+                  >
+                    {isLoading ? 'Sending...' : 'Send Reset Link'}
+                  </Button>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
         </Box>
       </Container>
-    </RecoveryContext.Provider>
+    </>
   );
 };
 

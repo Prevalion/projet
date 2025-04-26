@@ -103,35 +103,14 @@ const Header = () => {
           
           {!isMobile ? (
             <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                backgroundColor: 'white', 
-                borderRadius: '4px',
-                padding: '0 10px',
-                width: '300px'
-              }}>
-                <InputBase
-                  placeholder="Search Products..."
-                  sx={{ ml: 1, flex: 1, color: 'black' }}
-                  inputProps={{ 'aria-label': 'search products' }}
-                />
-                <Button 
-                  variant="contained" 
-                  color="secondary" 
-                  size="small"
-                  sx={{ height: '32px', minWidth: '60px' }}
-                >
-                  Search
-                </Button>
-              </Box>
+              <SearchBox />
               
               <Box component={Link} to="/cart" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'white', ml: 2 }}>
                 <Badge badgeContent={cartItems.reduce((a, c) => a + c.qty, 0)} color="error">
                   <ShoppingCart />
                 </Badge>
                 <Typography variant="body2" sx={{ ml: 1 }}>
-                  {userInfo ? userInfo.name : 'Cart'} ▼
+                  Cart 
                 </Typography>
               </Box>
               

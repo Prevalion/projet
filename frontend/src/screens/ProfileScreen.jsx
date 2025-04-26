@@ -163,45 +163,24 @@ const ProfileScreen = () => {
             <Typography variant="h6" gutterBottom>Password Reset</Typography>
             <Button
               variant="outlined"
-              onClick={async () => { // Make async for potential API call feedback
+              onClick={async () => {
                 if (!userInfo || !userInfo.email) {
                   toast.error('User information not available.');
                   return;
                 }
                 try {
-                  await forgotPassword({ email: userInfo.email }).unwrap(); // Pass email in object
-                  toast.success('Password reset link sent to your email.');
-                  // Optionally hide button or show message after sending
+                  await forgotPassword({ email: userInfo.email }).unwrap();
+                  toast.success('If an account with that email exists, a password reset link has been sent.');
                 } catch (err) {
                   toast.error(err?.data?.message || err.error || 'Failed to send reset link.');
                 }
               }}
               sx={{ mt: 1 }}
-              disabled={loadingForgotPassword} // Disable button while sending
+              disabled={loadingForgotPassword}
             >
               Send Reset Link
               {loadingForgotPassword && <CircularProgress size={24} sx={{ ml: 1 }} />}
             </Button>
-            {/* Removed the reset form part as reset usually happens via email link */}
-            {/* If reset needs to happen here, uncomment and implement state/handlers */}
-            {/* {showResetForm && (
-              <Box sx={{ mt: 2 }}>
-                <TextField
-                  label="New Password"
-                  type="password"
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-                <Button
-                  variant="contained"
-                  onClick={handlePasswordReset} // Define this handler
-                >
-                  Update Password
-                </Button>
-              </Box>
-            )} */}
           </Box>
         </Box>
       </Grid>

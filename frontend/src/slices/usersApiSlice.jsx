@@ -66,20 +66,20 @@ export const usersApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['User']
     }),
-    // Add these endpoints to the builder
+    // Update these endpoints to match requirements
     forgotPassword: builder.mutation({
-      query: (email) => ({
+      query: (data) => ({ // 'data' should be like { email: 'user@example.com' }
         url: `${USERS_URL}/forgot-password`,
         method: 'POST',
-        body: { email }
-      })
+        body: data,
+      }),
     }),
     resetPassword: builder.mutation({
-      query: ({ token, password }) => ({
+      query: ({ token, password }) => ({ // Pass token in URL
         url: `${USERS_URL}/reset-password/${token}`,
         method: 'PUT',
-        body: { password }
-      })
+        body: { password }, // Send new password in body
+      }),
     }),
   }),
 });

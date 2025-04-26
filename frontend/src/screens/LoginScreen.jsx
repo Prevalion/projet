@@ -103,19 +103,17 @@ const LoginScreen = () => {
       </form>
 
       {/* Replaced Row/Col with Grid */}
-      <Grid container justifyContent="space-between" alignItems="center" sx={{ mt: 3, py: 3 }}> {/* Replaced Row and added spacing/alignment */}
-        <Grid item> {/* Replaced Col */}
-          <Typography variant="body2"> {/* Added Typography for consistent styling */}
+      <Grid container justifyContent="space-between" alignItems="center" sx={{ mt: 3, py: 3 }}>
+        <Grid item>
+          <Typography variant="body2">
             New Customer?{' '}
-            {/* Use MUI Link with RouterLink component */}
             <Link component={RouterLink} to={redirect ? `/register?redirect=${redirect}` : '/register'} variant="body2">
               Register
             </Link>
           </Typography>
         </Grid>
-        <Grid item> {/* Replaced Col */}
-          <Typography variant="body2"> {/* Added Typography */}
-            {/* Use MUI Link with RouterLink component */}
+        <Grid item>
+          <Typography variant="body2">
             <Link component={RouterLink} to="/password-recovery" variant="body2">
               Forgot Password?
             </Link>

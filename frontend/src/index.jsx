@@ -33,23 +33,29 @@ import UserListScreen from './screens/admin/UserListScreen.jsx';
 import UserEditScreen from './screens/admin/UserEditScreen.jsx';
 import DashboardScreen from './screens/admin/DashboardScreen.jsx'; // Import the DashboardScreen component
 import PasswordRecoveryScreen from './screens/PasswordRecoveryScreen.jsx';
+import ResetPasswordScreen from './screens/ResetPasswordScreen'; // Import the new screen
+import SearchScreen from './screens/SearchScreen.jsx'; // <-- Import SearchScreen
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path='/' element={<App />}>
       <Route index={true} path='/' element={<HomeScreen />} />
-      <Route path='/search/:keyword' element={<HomeScreen />} />
+      {/* Use SearchScreen for search routes */}
+      <Route path='/search/:keyword' element={<SearchScreen />} />
       <Route path='/page/:pageNumber' element={<HomeScreen />} />
+      {/* Use SearchScreen for search routes with pagination */}
       <Route
         path='/search/:keyword/page/:pageNumber'
-        element={<HomeScreen />}
+        element={<SearchScreen />}
       />
       <Route path='/product/:id' element={<ProductScreen />} />
       <Route path='/cart' element={<CartScreen />} />
       <Route path='/login' element={<LoginScreen />} />
       <Route path='/register' element={<RegisterScreen />} />
       {/* Add the password recovery route here */}
-      {<Route path='/password-recovery' element={<PasswordRecoveryScreen />} />}
+      <Route path='/password-recovery' element={<PasswordRecoveryScreen />} />
+      {/* Add the password reset route */}
+      <Route path='/reset-password/:token' element={<ResetPasswordScreen />} />
       {/* Registered users */}
       <Route path='' element={<PrivateRoute />}>
         <Route path='/shipping' element={<ShippingScreen />} />
@@ -72,7 +78,14 @@ const router = createBrowserRouter(
         <Route path='/admin/user/:id/edit' element={<UserEditScreen />} />
       </Route>
     </Route>
-  )
+  ),
+  // Add the future flags here
+  {
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    },
+  }
 );
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

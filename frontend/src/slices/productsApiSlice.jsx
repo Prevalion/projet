@@ -5,22 +5,20 @@ import { apiSlice } from './apiSlice.jsx';
 export const productsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query({
-      // Assuming getProducts might accept pagination/keyword args based on ProductListScreen/HomeScreen
-      query: ({ pageNumber, keyword } = {}) => ({ 
-        url: PRODUCTS_URL,
-        params: { keyword, pageNumber },
+      // Update query signature to accept 'sort'
+      query: ({ keyword = '', pageNumber = 1, category = '', price = '', rating = '', sort = '' }) => ({
+        url: '/api/products',
+        params: {
+          keyword,
+          pageNumber,
+          category,
+          price,
+          rating,
+          sort // Include sort parameter
+        },
       }),
-      // Add providesTags for list and individual items
-      providesTags: (result, error, arg) => 
-        result
-          ? [
-              // Tag for the list itself
-              { type: 'Product', id: 'LIST' }, 
-              // Tags for each product in the list
-              ...result.products.map((product) => ({ type: 'Product', id: product._id })), 
-            ]
-          : [{ type: 'Product', id: 'LIST' }], // Fallback tag
       keepUnusedDataFor: 5,
+      providesTags: ['Products'], // Consider using providesTags with IDs if needed for caching
     }),
     getProductDetails: builder.query({
       query: (productId) => ({

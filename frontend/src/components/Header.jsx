@@ -160,7 +160,7 @@ const Header = () => {
                     onClick={handleOpenAdminMenu}
                     sx={{ ml: 2 }}
                   >
-                    Admin
+                    Admin Panel
                   </Button>
                   <Menu
                     anchorEl={anchorElAdmin}

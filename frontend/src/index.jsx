@@ -42,6 +42,7 @@ const router = createBrowserRouter(
       <Route index={true} path='/' element={<HomeScreen />} />
       {/* Use SearchScreen for search routes */}
       <Route path='/search/:keyword' element={<SearchScreen />} />
+      <Route path='/search' element={<SearchScreen />} /> {/* Add this route */}
       <Route path='/page/:pageNumber' element={<HomeScreen />} />
       {/* Use SearchScreen for search routes with pagination */}
       <Route

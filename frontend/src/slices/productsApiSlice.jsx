@@ -17,8 +17,15 @@ export const productsApiSlice = apiSlice.injectEndpoints({
           sort // Include sort parameter
         },
       }),
-      keepUnusedDataFor: 5,
-      providesTags: ['Products'], // Consider using providesTags with IDs if needed for caching
+      // keepUnusedDataFor: 5, // Keep this or adjust as needed
+      // Update providesTags to match invalidatesTags used in mutations
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.products.map(({ _id }) => ({ type: 'Product', id: _id })),
+              { type: 'Product', id: 'LIST' },
+            ]
+          : [{ type: 'Product', id: 'LIST' }],
     }),
     getProductDetails: builder.query({
       query: (productId) => ({

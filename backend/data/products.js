@@ -346,6 +346,18 @@ const products = [
     countInStock: 10,
     rating: 4.8,
     numReviews: 23,
+  },
+  {
+    name: 'Samsung Galaxy S24',
+    image: '/images/galaxy.jpg',
+    description:
+      'Experience the latest Galaxy AI features, stunning camera capabilities, and powerful performance.',
+    brand: 'Samsung',
+    category: 'Electronics',
+    price: 1099.99,
+    countInStock: 15,
+    rating: 4.9,
+    numReviews: 5,
   }
 ];
 

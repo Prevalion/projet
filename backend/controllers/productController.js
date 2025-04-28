@@ -5,60 +5,28 @@ import Product from '../models/productModel.js';
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-  const pageSize = 8;
+  const pageSize = 100; // Increased page size to show more products initially
   const page = Number(req.query.pageNumber) || 1;
 
-  // Build the filter object
-  const filter = {};
+  const keyword = req.query.keyword
+    ? { name: { $regex: req.query.keyword, $options: 'i' } }
+    : {};
 
-  // Keyword filter for name or description
-  if (req.query.keyword) {
-    filter.$or = [
-      { name: { $regex: req.query.keyword, $options: 'i' } },
-      { description: { $regex: req.query.keyword, $options: 'i' } }
-    ];
-  }
-
-  // Category filter
-  if (req.query.category) {
-    filter.category = { $regex: req.query.category, $options: 'i' };
-  }
-
-  // Price range filter
-  if (req.query.price) {
-    const [min, max] = req.query.price.split('-').map(Number);
-    if (min && max) {
-      filter.price = { $gte: min, $lte: max };
-    } else if (min && !max) {
-      filter.price = { $gte: min };
-    } else if (!min && max) {
-      filter.price = { $lte: max };
-    }
-  }
-
-  // Rating filter
-  if (req.query.rating) {
-    filter.rating = { $gte: Number(req.query.rating) };
-  }
-
-  // Sorting logic
+  // Define sorting options based on query parameters
   let sortOptions = {};
-  if (req.query.sort) {
-    switch (req.query.sort) {
-      case 'price_asc':
-        sortOptions = { price: 1 }; // 1 for ascending
-        break;
-      case 'price_desc':
-        sortOptions = { price: -1 }; // -1 for descending
-        break;
-      case 'rating_desc':
-        sortOptions = { rating: -1 };
-        break;
-      // Add more cases if needed, e.g., 'name_asc', 'createdAt_desc'
-      default:
-        // Default sort or no sort if value is invalid/empty
-        sortOptions = {}; 
-    }
+  if (req.query.sortBy === 'price') {
+    sortOptions.price = req.query.sortOrder === 'desc' ? -1 : 1;
+  } else if (req.query.sortBy === 'rating') {
+    sortOptions.rating = req.query.sortOrder === 'desc' ? -1 : 1;
+  } else {
+    // Default sorting if no specific sort parameter is provided
+    sortOptions.createdAt = -1; // Example: sort by newest first
+  }
+
+  // Combine keyword filter and category filter
+  const filter = { ...keyword };
+  if (req.query.category) {
+    filter.category = req.query.category;
   }
 
   const count = await Product.countDocuments(filter);

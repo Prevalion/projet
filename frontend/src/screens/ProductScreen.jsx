@@ -10,11 +10,14 @@ import {
   Card,
   CardContent,
   Button,
-  TextField,
-  MenuItem,
+  TextField, // Keep TextField for displaying quantity if needed, or use Typography
+  IconButton, // Import IconButton for +/- buttons
   Divider,
-  Paper
+  Paper,
+  Stack // Import Stack for layout
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add'; // Import icons
+import RemoveIcon from '@mui/icons-material/Remove'; // Import icons
 import { toast } from 'react-toastify';
 import {
   useGetProductDetailsQuery,
@@ -27,6 +30,7 @@ import Meta from '../components/Meta';
 import { addToCart } from '../slices/cartSlice';
 import ReviewForm from '../components/ReviewForm';
 import ReviewList from '../components/ReviewList';
+
 
 const ProductScreen = () => {
   const { id: productId } = useParams();
@@ -53,6 +57,16 @@ const ProductScreen = () => {
     dispatch(addToCart({ ...product, qty }));
     navigate('/cart');
   };
+
+  // Handlers for quantity buttons
+  const handleDecreaseQty = () => {
+    setQty((prevQty) => Math.max(1, prevQty - 1)); // Prevent going below 1
+  };
+
+  const handleIncreaseQty = () => {
+    setQty((prevQty) => Math.min(product.countInStock, prevQty + 1)); // Prevent exceeding stock
+  };
+
 
   // Modify submitHandler to accept review data directly
   const submitHandler = async ({ rating, comment }) => {
@@ -125,12 +139,7 @@ const ProductScreen = () => {
                   />
                 </ListItem>
                 <Divider />
-                <ListItem>
-                  <Typography sx={{ fontWeight: 500 }}>
-                    Price: ${product.price}
-                  </Typography>
-                </ListItem>
-                <Divider />
+
                 <ListItem>
                   <Typography sx={{ color: '#555' }}>
                     {product.description}
@@ -171,24 +180,34 @@ const ProductScreen = () => {
 
                     {product.countInStock > 0 && (
                       <ListItem>
-                        <Grid container alignItems="center">
-                          <Grid item xs={6}>
-                            <Typography>Qty</Typography>
+                        <Grid container alignItems="center" spacing={1}>
+                          <Grid item xs={4}>
+                            {/* Changed label from Qty to Quantity */}
+                            <Typography>Quantity:</Typography>
                           </Grid>
-                          <Grid item xs={6}>
-                            <TextField
-                              select
-                              value={qty}
-                              onChange={(e) => setQty(Number(e.target.value))}
-                              size="small"
-                              sx={{ minWidth: '60px' }}
-                            >
-                              {[...Array(product.countInStock).keys()].map((x) => (
-                                <MenuItem key={x + 1} value={x + 1}>
-                                  {x + 1}
-                                </MenuItem>
-                              ))}
-                            </TextField>
+                          <Grid item xs={8}>
+                            {/* Replaced dropdown with +/- buttons and display */}
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                              <IconButton 
+                                size="small" 
+                                onClick={handleDecreaseQty} 
+                                disabled={qty <= 1} // Disable if qty is 1
+                                aria-label="decrease quantity"
+                              >
+                                <RemoveIcon fontSize="small" />
+                              </IconButton>
+                              <Typography sx={{ minWidth: '20px', textAlign: 'center' }}>
+                                {qty}
+                              </Typography>
+                              <IconButton 
+                                size="small" 
+                                onClick={handleIncreaseQty} 
+                                disabled={qty >= product.countInStock} // Disable if qty reaches stock limit
+                                aria-label="increase quantity"
+                              >
+                                <AddIcon fontSize="small" />
+                              </IconButton>
+                            </Stack>
                           </Grid>
                         </Grid>
                       </ListItem>

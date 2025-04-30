@@ -95,9 +95,9 @@ const Header = () => {
           )}
           
           <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'white' }}>
-            <img src={logo} alt="ProShop" style={{ height: 40, marginRight: 8 }} />
+            <img src={logo} alt="Techzone" style={{ height: 40, marginRight: 8 }} />
             <Typography variant="h6" noWrap component="div">
-              ProShop
+              Techzone
             </Typography>
           </Box>
           

@@ -40,26 +40,26 @@ function sendEmail({ recipient_email, OTP }) {
     const mail_configs = {
       from: process.env.MY_EMAIL,
       to: recipient_email,
-      subject: "ProShop Account Password Recovery",
+      subject: "Techzone Account Password Recovery",
       html: `<!DOCTYPE html>
 <html lang="en" >
 <head>
   <meta charset="UTF-8">
-  <title>ProShop Account Password Recovery</title>
+  <title>Techzone Account Password Recovery</title>
 </head>
 <body>
 <div style="font-family: Helvetica,Arial,sans-serif;min-width:1000px;overflow:auto;line-height:2">
   <div style="margin:50px auto;width:70%;padding:20px 0">
     <div style="border-bottom:1px solid #eee">
-      <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">ProShop</a>
+      <a href="" style="font-size:1.4em;color: #00466a;text-decoration:none;font-weight:600">Techzone</a>
     </div>
     <p style="font-size:1.1em">Hi,</p>
-    <p>Thank you for choosing ProShop. Use the following OTP to complete your Password Recovery Procedure. OTP is valid for 5 minutes</p>
+    <p>Thank you for choosing Techzone. Use the following OTP to complete your Password Recovery Procedure. OTP is valid for 5 minutes</p>
     <h2 style="background: #00466a;margin: 0 auto;width: max-content;padding: 0 10px;color: #fff;border-radius: 4px;">${OTP}</h2>
     <p style="font-size:0.9em;">Regards,<br />Koding 101</p>
     <hr style="border:none;border-top:1px solid #eee" />
     <div style="float:right;padding:8px 0;color:#aaa;font-size:0.8em;line-height:1;font-weight:300">
-      <p>ProShop Inc</p>
+      <p>Techzone Inc</p>
       <p>1600 Amphitheatre Parkway</p>
       <p>California</p>
     </div>

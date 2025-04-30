@@ -7,7 +7,7 @@ const Footer = () => {
     <Box component="footer" sx={{ py: 3, bgcolor: 'background.paper' }}>
       <Container>
         <Typography variant="body2" align="center">
-          ProShop &copy; {currentYear}
+        Techzone &copy; {currentYear}
         </Typography>
       </Container>
     </Box>

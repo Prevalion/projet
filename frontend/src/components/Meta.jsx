@@ -1,9 +1,9 @@
 import { Helmet } from 'react-helmet-async';
 
 const Meta = ({
-  title = 'Welcome To ProShop',
-  description = 'We sell the best products for cheap',
-  keywords = 'electronics, buy electronics, cheap electroincs',
+  title = 'Welcome To TechZone',
+  description = 'We sell the best products for the best price',
+  keywords = 'electronics, buy electronics, best price electronics',
 }) => {
   return (
     <Helmet>

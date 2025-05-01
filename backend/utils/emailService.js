@@ -14,15 +14,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/**
- * Send an email
- * @param {Object} options - Email options
- * @param {string} options.to - Recipient email
- * @param {string} options.subject - Email subject
- * @param {string} options.text - Plain text version
- * @param {string} options.html - HTML version
- * @returns {Promise} - Email sending result
- */
+// Send an email with the given options
 export const sendEmail = async (options) => {
   try {
     const mailOptions = {
@@ -36,7 +28,6 @@ export const sendEmail = async (options) => {
     const info = await transporter.sendMail(mailOptions);
     console.log("Message sent: %s", info.messageId);
 
-    
     return info;
   } catch (error) {
     console.error('Error sending email:', error);
@@ -44,11 +35,7 @@ export const sendEmail = async (options) => {
   }
 };
 
-/**
- * Send order confirmation email
- * @param {Object} order - Order details
- * @param {Object} user - User details
- */
+// Send order confirmation email to the user
 export const sendOrderConfirmation = async (order, user) => {
   const subject = `Order Confirmation - Order #${order._id}`;
   
@@ -116,16 +103,10 @@ export const sendOrderConfirmation = async (order, user) => {
   });
 };
 
-/**
- * Send password reset email
- * @param {string} email - User email
- * @param {string} resetToken - Password reset token
- * @param {string} resetUrl - Frontend URL for password reset
- */
+// Send password reset email to the user
 export const sendPasswordResetEmail = async (email, resetToken, resetUrl) => {
   try {
     const subject = 'Password Reset Request';
-    
     const resetLink = `${resetUrl}/${resetToken}`;
     
     const text = `

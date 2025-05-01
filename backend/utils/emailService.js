@@ -5,11 +5,12 @@ dotenv.config();
 // Rest of your application code
 // Create reusable transporter using environment variables
 const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // Add this line for SSL/TLS connection (required for port 465)
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: "mystorehelp004@gmail.com",
+    pass: "bghi hvqs effj hpbp",
   },
 });
 

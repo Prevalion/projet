@@ -24,35 +24,28 @@ import Meta from '../components/Meta';
 const SearchScreen = () => {
   const navigate = useNavigate();
   const { keyword: urlKeyword, pageNumber = 1, category: urlCategory } = useParams();
-  const queryParams = new URLSearchParams(window.location.search); // Get query params
+  const queryParams = new URLSearchParams(window.location.search);
 
   const [keyword, setKeyword] = useState(urlKeyword || '');
   const [category, setCategory] = useState(urlCategory || '');
-  const [price, setPrice] = useState(queryParams.get('price') || ''); // Get price from URL
-  const [rating, setRating] = useState(queryParams.get('rating') || ''); // Get rating from URL
-  const [sortBy, setSortBy] = useState(queryParams.get('sort') || ''); // Add state for sorting, get from URL
+  const [price, setPrice] = useState(queryParams.get('price') || '');
+  const [rating, setRating] = useState(queryParams.get('rating') || '');
+  const [sortBy, setSortBy] = useState(queryParams.get('sort') || '');
 
-  // Update the query hook to include sortBy
   const { data, isLoading, error, refetch } = useGetProductsQuery({
     keyword,
     pageNumber,
     category,
     price,
     rating,
-    sort: sortBy, // Pass sortBy to the query
+    sort: sortBy,
   });
 
   const categories = [
-    'Electronics',
-    'Cameras',
-    'Laptops',
-    'Phones',
-    'Accessories',
-    'Books',
-    'Clothing',
-    'Beauty',
-    'Sports',
-    'Home'
+    'Smart Home',
+    'Home Appliances',
+    'Office Supplies',
+    'Electronics'
   ];
 
   const priceRanges = [
@@ -71,51 +64,35 @@ const SearchScreen = () => {
     { value: '1', label: '1 Star & Up' },
   ];
 
-  // Add sorting options
   const sortOptions = [
+    { value: '', label: 'Best Match' },
     { value: 'price_asc', label: 'Price: Low to High' },
     { value: 'price_desc', label: 'Price: High to Low' },
     { value: 'rating_desc', label: 'Avg. Customer Rating' },
-    { value: '', label: 'Best Match' }, // Default option
   ];
 
-  // Effect to handle navigation when filters/sort change
   useEffect(() => {
     const params = new URLSearchParams();
     if (category) params.set('category', category);
     if (price) params.set('price', price);
     if (rating) params.set('rating', rating);
-    if (sortBy) params.set('sort', sortBy); // Add sort to params
+    if (sortBy) params.set('sort', sortBy);
 
     const queryString = params.toString();
     const path = keyword ? `/search/${keyword}` : '/search';
 
-    // Only navigate if the query string or keyword actually changes
-    // to avoid unnecessary re-renders or navigation loops
     const currentSearch = window.location.search;
     const currentPath = window.location.pathname;
     const targetPath = `${path}${queryString ? `?${queryString}` : ''}`;
     const currentFullPath = `${currentPath}${currentSearch}`;
 
     if (targetPath !== currentFullPath) {
-       // Using navigate with replace to avoid pushing duplicate entries into history
-       // when only filters/sort change without keyword search.
-       // If keyword changes, we might want to push instead.
-       // For simplicity now, using replace.
-       navigate(`${path}${queryString ? `?${queryString}` : ''}`, { replace: true });
-       // Optionally refetch data if navigation doesn't trigger it automatically
-       // refetch();
+      navigate(`${path}${queryString ? `?${queryString}` : ''}`, { replace: true });
     }
-    // Dependency array includes all filters and sorting options
   }, [keyword, category, price, rating, sortBy, navigate]);
-
 
   const submitHandler = (e) => {
     e.preventDefault();
-    // Navigation is now handled by the useEffect hook when keyword changes
-    // We might still need this if we want an explicit search button action
-    // For now, let useEffect handle navigation based on state changes.
-    // Triggering navigation here might conflict with useEffect
     const params = new URLSearchParams();
     if (category) params.set('category', category);
     if (price) params.set('price', price);
@@ -136,38 +113,35 @@ const SearchScreen = () => {
           Search & Filter Products
         </Typography>
 
-        {/* Search Input Form */}
         <Box component="form" onSubmit={submitHandler} sx={{ mb: 3 }}>
-           <Grid container spacing={2} alignItems="center">
-             <Grid item xs={12} md={6}> {/* Adjusted width */}
-               <TextField
-                 fullWidth
-                 label="Search Products"
-                 variant="outlined"
-                 value={keyword}
-                 onChange={(e) => setKeyword(e.target.value)}
-                 placeholder="Search by name or description..."
-               />
-             </Grid>
-             <Grid item xs={12} md={6}> {/* Adjusted width */}
-               <Button
-                 type="submit"
-                 variant="contained"
-                 color="primary"
-                 fullWidth
-                 sx={{ height: '56px' }}
-               >
-                 Search
-               </Button>
-             </Grid>
-           </Grid>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Search Products"
+                variant="outlined"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="Search by name or description..."
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                fullWidth
+                sx={{ height: '56px' }}
+              >
+                Search
+              </Button>
+            </Grid>
+          </Grid>
         </Box>
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Filter and Sort Controls */}
         <Grid container spacing={2} alignItems="center">
-          {/* Category Filter */}
           <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>Category</InputLabel>
@@ -186,7 +160,6 @@ const SearchScreen = () => {
             </FormControl>
           </Grid>
 
-          {/* Price Filter */}
           <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>Price Range</InputLabel>
@@ -205,7 +178,6 @@ const SearchScreen = () => {
             </FormControl>
           </Grid>
 
-          {/* Rating Filter */}
           <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>Rating</InputLabel>
@@ -224,7 +196,6 @@ const SearchScreen = () => {
             </FormControl>
           </Grid>
 
-          {/* Sorting Dropdown */}
           <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth variant="outlined">
               <InputLabel>Sort By</InputLabel>
@@ -244,7 +215,6 @@ const SearchScreen = () => {
         </Grid>
       </Paper>
 
-      {/* Results Section */}
       {isLoading ? (
         <Loader />
       ) : error ? (
@@ -256,7 +226,7 @@ const SearchScreen = () => {
               {keyword
                 ? `Search Results for "${keyword}"`
                 : 'Products'}
-              { (category || price || rating || sortBy) && ' (Filtered/Sorted)'}
+              {(category || price || rating || sortBy) && ' (Filtered/Sorted)'}
             </Typography>
             <Typography variant="body1">
               {data.products.length} result{data.products.length !== 1 ? 's' : ''} found
@@ -265,7 +235,7 @@ const SearchScreen = () => {
 
           {data.products.length === 0 ? (
             <Message severity="info">
-              No products found matching your criteria. Try adjusting your search or filters.
+              No products found matching your search criteria. Please try again with different filters.
             </Message>
           ) : (
             <Grid container spacing={3}>
@@ -282,11 +252,6 @@ const SearchScreen = () => {
               pages={data.pages}
               page={data.page}
               keyword={keyword ? keyword : ''}
-              // Pass filter/sort params to Paginate if needed for links
-              // category={category}
-              // price={price}
-              // rating={rating}
-              // sortBy={sortBy}
             />
           </Box>
         </>

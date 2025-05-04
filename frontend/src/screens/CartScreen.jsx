@@ -1,48 +1,92 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+// Remove useDispatch and old actions
+// import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux'; // Keep for userInfo check if needed later
 import {
-  Grid, // Changed from Row, Col
-  List, // Changed from ListGroup
-  ListItem, // Changed from ListGroup.Item
-  Box, // Used for layout and Image replacement
-  Typography, // Used for text elements
-  Button, // Changed from react-bootstrap Button
-  Card, // Changed from react-bootstrap Card
-  CardContent, // Added for MUI Card structure
-  TextField, // Changed from Form.Control
-  MenuItem, // Used with TextField select
-  IconButton, // Used for delete button
-  Paper, // Used to wrap list items for better styling
+  Grid,
+  List,
+  ListItem,
+  Box,
+  Typography,
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  MenuItem,
+  IconButton,
+  Paper,
+  CircularProgress, // Import CircularProgress
+  Alert // Import Alert for error/loading messages
 } from '@mui/material';
-import { Delete } from '@mui/icons-material'; // Changed from FaTrash
-import Message from '../components/Message'; // Assuming this component is adaptable or you'll replace it with MUI Alert if needed
-import { addToCart, removeFromCart } from '../slices/cartSlice';
-import Meta from '../components/Meta'; // Import Meta component
+import { Delete } from '@mui/icons-material';
+import Message from '../components/Message';
+// Remove old action imports
+// import { addToCart, removeFromCart } from '../slices/cartSlice';
+// Import RTK Query hooks for cart
+import {
+  useGetCartQuery,
+  useUpdateItemMutation,
+  useRemoveItemMutation,
+} from '../slices/cartApiSlice.jsx';
+import Meta from '../components/Meta';
+import Loader from '../components/Loader'; // Keep Loader for initial loading
 
 const CartScreen = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  // Remove useDispatch
+  // const dispatch = useDispatch();
 
-  const cart = useSelector((state) => state.cart);
-  const { cartItems } = cart;
+  // Fetch cart data using RTK Query
+  const { data: cartData, isLoading: isLoadingCart, error: cartError, refetch } = useGetCartQuery();
+  const cartItems = cartData?.items || []; // Get items from query data
 
-  const addToCartHandler = (product, qty) => {
-    dispatch(addToCart({ ...product, qty: Number(qty) })); // Ensure qty is a number
+  // Get mutation hooks
+  const [updateItem, { isLoading: isUpdatingItem }] = useUpdateItemMutation();
+  const [removeItem, { isLoading: isRemovingItem }] = useRemoveItemMutation();
+
+  // Update handler to use useUpdateItemMutation
+  const updateCartHandler = async (item, qty) => {
+    try {
+      await updateItem({ productId: item.product, qty: Number(qty) }).unwrap();
+      // No need to dispatch, RTK Query handles cache update via invalidation
+      // refetch(); // Optionally refetch if needed, but invalidation should work
+    } catch (err) {
+      toast.error(err?.data?.message || err.error || 'Failed to update cart item');
+    }
   };
 
-  const removeFromCartHandler = (id) => {
-    dispatch(removeFromCart(id));
+  // Update handler to use useRemoveItemMutation
+  const removeFromCartHandler = async (productId) => {
+    try {
+      await removeItem(productId).unwrap();
+      // No need to dispatch
+      // refetch(); // Optionally refetch
+    } catch (err) {
+      toast.error(err?.data?.message || err.error || 'Failed to remove cart item');
+    }
   };
 
   const checkoutHandler = () => {
     navigate('/login?redirect=/shipping');
   };
 
+  // Handle loading state for the cart query
+  if (isLoadingCart) {
+    return <Loader />;
+  }
+
+  // Handle error state for the cart query
+  if (cartError) {
+    return (
+      <Alert severity="error">
+        Error loading cart: {cartError?.data?.message || cartError.error}
+      </Alert>
+    );
+  }
+
   return (
-    // Replaced Row with Grid container
     <Grid container spacing={4}>
-      <Meta title="Shopping Cart" /> {/* Added Meta component */}
-      {/* Replaced Col md={8} with Grid item */}
+      <Meta title="Shopping Cart" />
       <Grid item md={8}>
         <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
           Shopping Cart
@@ -52,18 +96,25 @@ const CartScreen = () => {
             Your cart is empty <Link to='/'>Go Back</Link>
           </Message>
         ) : (
-          // Replaced ListGroup with List
           <List sx={{ width: '100%' }}>
             {cartItems.map((item) => (
-              // Replaced ListGroup.Item with ListItem wrapped in Paper for styling
-              <Paper key={item._id} elevation={1} sx={{ mb: 2, p: 2 }}>
-                {/* Replaced inner Row with Grid container */}
+              <Paper key={item.product} elevation={1} sx={{ mb: 2, p: 2, position: 'relative' }}>
+                 {/* Add overlay for loading states */}
+                 {(isUpdatingItem || isRemovingItem) && (
+                   <Box sx={{
+                     position: 'absolute',
+                     top: 0, left: 0, right: 0, bottom: 0,
+                     backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                     display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1
+                   }}>
+                     <CircularProgress size={30} />
+                   </Box>
+                 )}
                 <Grid container alignItems="center" spacing={2}>
-                  {/* Replaced Col with Grid item */}
                   <Grid item xs={12} sm={2} sx={{ display: 'flex', justifyContent: 'center' }}>
-                    {/* Replaced Image with Box component="img" */}
                     <Box
                       component="img"
+                      // Use item.image directly from populated cart data
                       src={item.image}
                       alt={item.name}
                       sx={{
@@ -80,26 +131,32 @@ const CartScreen = () => {
                   <Grid item xs={12} sm={3}>
                     <Typography
                       component={Link}
-                      to={`/product/${item._id}`}
+                      // Use item.product for the link ID
+                      to={`/product/${item.product}`}
                       variant="body1"
                       sx={{ fontWeight: 500, color: 'text.primary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
                     >
+                      {/* Use item.name */}
                       {item.name}
                     </Typography>
                   </Grid>
                   <Grid item xs={4} sm={2}>
+                    {/* Use item.price */}
                     <Typography variant="body1">${item.price}</Typography>
                   </Grid>
                   <Grid item xs={4} sm={2}>
-                    {/* Replaced Form.Control with TextField select */}
                     <TextField
                       select
                       size="small"
                       value={item.qty}
-                      onChange={(e) => addToCartHandler(item, e.target.value)}
+                      // Call updateCartHandler on change
+                      onChange={(e) => updateCartHandler(item, e.target.value)}
+                      // Disable while updating
+                      disabled={isUpdatingItem || isRemovingItem}
                       sx={{ minWidth: '70px' }}
                     >
-                      {[...Array(item.countInStock).keys()].map((x) => (
+                      {/* Use item.productDetails?.countInStock or a reasonable max */}
+                      {[...Array(item.productDetails?.countInStock || 10).keys()].map((x) => (
                         <MenuItem key={x + 1} value={x + 1}>
                           {x + 1}
                         </MenuItem>
@@ -107,11 +164,13 @@ const CartScreen = () => {
                     </TextField>
                   </Grid>
                   <Grid item xs={4} sm={2} sx={{ textAlign: 'right' }}>
-                    {/* Replaced Button with IconButton */}
                     <IconButton
                       aria-label="delete"
-                      onClick={() => removeFromCartHandler(item._id)}
+                      // Call removeFromCartHandler with item.product ID
+                      onClick={() => removeFromCartHandler(item.product)}
                       color="error"
+                      // Disable while removing or updating
+                      disabled={isUpdatingItem || isRemovingItem}
                     >
                       <Delete />
                     </IconButton>
@@ -122,15 +181,15 @@ const CartScreen = () => {
           </List>
         )}
       </Grid>
-      {/* Replaced Col md={4} with Grid item */}
       <Grid item md={4}>
-        {/* Replaced react-bootstrap Card with MUI Card */}
         <Card sx={{ borderRadius: 2, boxShadow: 3 }}>
           <CardContent>
             <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 600 }}>
+              {/* Calculate subtotal based on fetched cartItems */}
               Subtotal ({cartItems.reduce((acc, item) => acc + item.qty, 0)}) items
             </Typography>
             <Typography variant="h6" sx={{ my: 2 }}>
+              {/* Calculate total price based on fetched cartItems */}
               ${cartItems.reduce((acc, item) => acc + item.qty * item.price, 0).toFixed(2)}
             </Typography>
             <Button

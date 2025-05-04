@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+// Remove useDispatch and addToCart
+// import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux'; // Keep useSelector for userInfo
 import {
   Box,
   Grid,
@@ -10,31 +12,36 @@ import {
   Card,
   CardContent,
   Button,
-  TextField, // Keep TextField for displaying quantity if needed, or use Typography
-  IconButton, // Import IconButton for +/- buttons
+  TextField,
+  IconButton,
   Divider,
   Paper,
-  Stack // Import Stack for layout
+  Stack,
+  CircularProgress // Import CircularProgress for loading state
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add'; // Import icons
-import RemoveIcon from '@mui/icons-material/Remove'; // Import icons
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import { toast } from 'react-toastify';
 import {
   useGetProductDetailsQuery,
   useCreateReviewMutation,
 } from '../slices/productsApiSlice';
+// Import the RTK Query hook for adding items
+import { useAddItemMutation } from '../slices/cartApiSlice.jsx';
 import Rating from '../components/Rating';
 import Loader from '../components/Loader';
 import Message from '../components/Message';
 import Meta from '../components/Meta';
-import { addToCart } from '../slices/cartSlice';
+// Remove addToCart import
+// import { addToCart } from '../slices/cartSlice';
 import ReviewForm from '../components/ReviewForm';
 import ReviewList from '../components/ReviewList';
 
 
 const ProductScreen = () => {
   const { id: productId } = useParams();
-  const dispatch = useDispatch();
+  // Remove useDispatch
+  // const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const [qty, setQty] = useState(1);
@@ -53,9 +60,20 @@ const ProductScreen = () => {
   const [createReview, { isLoading: loadingProductReview }] =
     useCreateReviewMutation();
 
-  const addToCartHandler = () => {
-    dispatch(addToCart({ ...product, qty }));
-    navigate('/cart');
+  // Use the addItem mutation hook
+  const [addItem, { isLoading: isAddingItem }] = useAddItemMutation();
+
+  // Update addToCartHandler to use the mutation
+  const addToCartHandler = async () => {
+    try {
+      // Call the mutation with productId and qty
+      await addItem({ productId: product._id, qty }).unwrap();
+      // Navigate to cart on success
+      navigate('/cart');
+      toast.success('Item added to cart'); // Optional: Add success toast
+    } catch (err) {
+      toast.error(err?.data?.message || err.error || 'Failed to add item to cart');
+    }
   };
 
   // Handlers for quantity buttons
@@ -182,16 +200,14 @@ const ProductScreen = () => {
                       <ListItem>
                         <Grid container alignItems="center" spacing={1}>
                           <Grid item xs={4}>
-                            {/* Changed label from Qty to Quantity */}
                             <Typography>Quantity:</Typography>
                           </Grid>
                           <Grid item xs={8}>
-                            {/* Replaced dropdown with +/- buttons and display */}
                             <Stack direction="row" alignItems="center" spacing={1}>
-                              <IconButton 
-                                size="small" 
-                                onClick={handleDecreaseQty} 
-                                disabled={qty <= 1} // Disable if qty is 1
+                              <IconButton
+                                size="small"
+                                onClick={handleDecreaseQty}
+                                disabled={qty <= 1}
                                 aria-label="decrease quantity"
                               >
                                 <RemoveIcon fontSize="small" />
@@ -199,9 +215,9 @@ const ProductScreen = () => {
                               <Typography sx={{ minWidth: '20px', textAlign: 'center' }}>
                                 {qty}
                               </Typography>
-                              <IconButton 
-                                size="small" 
-                                onClick={handleIncreaseQty} 
+                              <IconButton
+                                size="small"
+                                onClick={handleIncreaseQty}
                                 disabled={qty >= product.countInStock} // Disable if qty reaches stock limit
                                 aria-label="increase quantity"
                               >
@@ -216,13 +232,14 @@ const ProductScreen = () => {
 
                     <ListItem>
                       <Button
-                        onClick={addToCartHandler}
                         variant="contained"
+                        color="primary"
                         fullWidth
-                        disabled={product.countInStock === 0}
-                        sx={{ padding: '10px 0', fontWeight: 500 }}
+                        disabled={product.countInStock === 0 || isAddingItem} // Disable if out of stock or adding
+                        onClick={addToCartHandler}
+                        sx={{ mt: 1, py: 1.5 }}
                       >
-                        Add To Cart
+                        {isAddingItem ? <CircularProgress size={24} color="inherit" /> : 'Add To Cart'}
                       </Button>
                     </ListItem>
                   </List>
@@ -234,7 +251,7 @@ const ProductScreen = () => {
           {/* The entire Grid container below is removed */}
           {/* <Grid container sx={{ mt: 4 }}> ... </Grid> */}
           {/* End of removed section */}
-        </>
+          </>
       )}
       
       {/* Product Reviews Section (This section remains) */}

@@ -9,6 +9,7 @@ import productRoutes from './routes/productRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import cartRoutes from './routes/cartRoutes.js'; // Import cart routes
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 
@@ -29,6 +30,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/cart', cartRoutes); // Mount cart routes
 app.use('/api/dashboard', dashboardRoutes);
 
 

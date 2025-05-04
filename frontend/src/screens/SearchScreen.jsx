@@ -31,6 +31,7 @@ const SearchScreen = () => {
   const [price, setPrice] = useState(queryParams.get('price') || '');
   const [rating, setRating] = useState(queryParams.get('rating') || '');
   const [sortBy, setSortBy] = useState(queryParams.get('sort') || '');
+  const [availableCategories, setAvailableCategories] = useState([]);
 
   const { data, isLoading, error, refetch } = useGetProductsQuery({
     keyword,
@@ -41,12 +42,18 @@ const SearchScreen = () => {
     sort: sortBy,
   });
 
-  const categories = [
-    'Smart Home',
-    'Home Appliances',
-    'Office Supplies',
-    'Electronics'
-  ];
+  // Fetch all products to extract available categories
+  const { data: allProductsData, isLoading: isLoadingAllProducts } = useGetProductsQuery({});
+
+  // Extract unique categories from products
+  useEffect(() => {
+    if (allProductsData && allProductsData.products) {
+      const uniqueCategories = [...new Set(allProductsData.products.map(product => 
+        product.category.charAt(0).toUpperCase() + product.category.slice(1)
+      ))];
+      setAvailableCategories(uniqueCategories.sort());
+    }
+  }, [allProductsData]);
 
   const priceRanges = [
     { value: '0-50', label: 'Under $50' },
@@ -151,11 +158,15 @@ const SearchScreen = () => {
                 label="Category"
               >
                 <MenuItem value="">All Categories</MenuItem>
-                {categories.map((cat) => (
-                  <MenuItem key={cat} value={cat.toLowerCase()}>
-                    {cat}
-                  </MenuItem>
-                ))}
+                {isLoadingAllProducts ? (
+                  <MenuItem disabled>Loading categories...</MenuItem>
+                ) : (
+                  availableCategories.map((cat) => (
+                    <MenuItem key={cat} value={cat.toLowerCase()}>
+                      {cat}
+                    </MenuItem>
+                  ))
+                )}
               </Select>
             </FormControl>
           </Grid>

@@ -1,7 +1,7 @@
-import { apiSlice } from './apiSlice.jsx';
-import { USERS_URL } from '../constants.jsx';
+import { apiSlice } from './apiSlice';
+import { USERS_URL } from '../constants';
 
-export const usersApiSlice = apiSlice.injectEndpoints({
+export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (data) => ({
@@ -9,6 +9,8 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+      // Add invalidatesTags here
+      invalidatesTags: ['Cart'], // Invalidate Cart tag on successful login
     }),
     register: builder.mutation({
       query: (data) => ({
@@ -16,12 +18,16 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
         body: data,
       }),
+       // Also invalidate Cart on register if a new user might get an empty cart
+       invalidatesTags: ['Cart'],
     }),
     logout: builder.mutation({
       query: () => ({
         url: `${USERS_URL}/logout`,
         method: 'POST',
       }),
+      // Optionally, you could invalidate here too, though clearing is handled elsewhere
+      // invalidatesTags: ['Cart'],
     }),
     profile: builder.mutation({
       query: (data) => ({
@@ -34,7 +40,7 @@ export const usersApiSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: USERS_URL,
       }),
-      providesTags: ['Users'],
+      providesTags: ['User'],
       keepUnusedDataFor: 5,
     }),
     deleteUser: builder.mutation({
@@ -42,7 +48,6 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         url: `${USERS_URL}/${userId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Users'],
     }),
     getUserDetails: builder.query({
       query: (id) => ({
@@ -56,29 +61,23 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: ['Users'],
+      invalidatesTags: ['User'],
     }),
-    bulkUpdateUsers: builder.mutation({
+     // Add forgotPassword mutation if not already present
+     forgotPassword: builder.mutation({
       query: (data) => ({
-        url: '/api/users/bulk-update',
-        method: 'PUT',
-        body: data
-      }),
-      invalidatesTags: ['User']
-    }),
-    // Update these endpoints to match requirements
-    forgotPassword: builder.mutation({
-      query: (data) => ({ // 'data' should be like { email: 'user@example.com' }
         url: `${USERS_URL}/forgot-password`,
         method: 'POST',
-        body: data,
+        body: data, // Expects { email: '...' }
       }),
     }),
+    // Add resetPassword mutation if not already present
     resetPassword: builder.mutation({
-      query: ({ token, password }) => ({ // Pass token in URL
+      query: ({ token, password }) => ({
+        // Ensure the URL matches your backend route, e.g., /reset-password/:token
         url: `${USERS_URL}/reset-password/${token}`,
         method: 'PUT',
-        body: { password }, // Send new password in body
+        body: { password }, // Expects { password: '...' }
       }),
     }),
   }),
@@ -91,8 +90,8 @@ export const {
   useProfileMutation,
   useGetUsersQuery,
   useDeleteUserMutation,
-  useUpdateUserMutation,
   useGetUserDetailsQuery,
-  useForgotPasswordMutation,
-  useResetPasswordMutation
-} = usersApiSlice;
+  useUpdateUserMutation,
+  useForgotPasswordMutation, // Export new mutation
+  useResetPasswordMutation, // Export new mutation
+} = userApiSlice;

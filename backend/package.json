@@ -5,6 +5,7 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
+    "go":"concurrently \"npm run server\" \"npm run seeder:import\"",
     "start": "node server.js",
     "server": "nodemon server.js",
     "client": "npm start --prefix ../frontend",

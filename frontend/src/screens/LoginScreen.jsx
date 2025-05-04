@@ -41,6 +41,16 @@ const LoginScreen = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+
+
     try {
       const res = await login({ email, password }).unwrap();
       dispatch(setCredentials({ ...res }));

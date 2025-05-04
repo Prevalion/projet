@@ -152,10 +152,13 @@ const OrderScreen = () => {
                   <Typography>Items</Typography>
                   <Typography>${order.itemsPrice}</Typography>
                 </ListItem>
+                {/* Remove the Shipping ListItem */}
+                {/* 
                 <ListItem sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography>Shipping</Typography>
                   <Typography>${order.shippingPrice}</Typography>
-                </ListItem>
+                </ListItem> 
+                */}
                 <ListItem sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography>Tax</Typography>
                   <Typography>${order.taxPrice}</Typography>

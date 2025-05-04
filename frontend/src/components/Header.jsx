@@ -1,43 +1,62 @@
 import { useState } from 'react';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Container, 
-  Box, 
-  IconButton, 
-  Menu, 
-  MenuItem, 
-  Badge, 
-  Button, 
-  Drawer, 
-  List, 
-  ListItem, 
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Container,
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  Badge,
+  Button,
+  Drawer,
+  List,
+  ListItem,
   ListItemText,
   useMediaQuery,
   useTheme,
-  InputBase
+  InputBase,
+  CircularProgress // Import CircularProgress
 } from '@mui/material';
 import { ShoppingCart, Person, Menu as MenuIcon } from '@mui/icons-material';
-import { useSelector, useDispatch } from 'react-redux';
+// Remove useDispatch and resetCart if only used here for logout
+// import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux'; // Keep for userInfo
 import { useNavigate, Link } from 'react-router-dom';
 import { useLogoutMutation } from '../slices/usersApiSlice.jsx';
 import { logout } from '../slices/authSlice.jsx';
 import SearchBox from './SearchBox.jsx';
 import logo from '../assets/logo.png';
+// Remove resetCart import if not needed elsewhere
+// import { resetCart } from '../slices/cartSlice.jsx';
+// Import the cart query hook
+import { useGetCartQuery } from '../slices/cartApiSlice.jsx';
+// Import resetCart action if still needed for logout
 import { resetCart } from '../slices/cartSlice.jsx';
+import { useDispatch } from 'react-redux'; // Import useDispatch if using resetCart
 
 const Header = () => {
-  const { cartItems } = useSelector((state) => state.cart);
+  // Remove cartItems selection from Redux state
+  // const { cartItems } = useSelector((state) => state.cart);
   const { userInfo } = useSelector((state) => state.auth);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Fetch cart data using RTK Query
+  // Skip fetching if user is not logged in
+  const { data: cartData, isLoading: isLoadingCart } = useGetCartQuery(undefined, {
+    skip: !userInfo, // Skip query if no userInfo
+  });
+  // Calculate cart count from query data, default to 0 if no data/items
+  const cartItemCount = userInfo ? (cartData?.items?.reduce((acc, item) => acc + item.qty, 0) || 0) : 0;
+
 
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [anchorElAdmin, setAnchorElAdmin] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch(); // Keep dispatch if using resetCart
   const navigate = useNavigate();
 
   const [logoutApiCall] = useLogoutMutation();
@@ -45,8 +64,9 @@ const Header = () => {
   const logoutHandler = async () => {
     try {
       await logoutApiCall().unwrap();
-      dispatch(logout());
-      dispatch(resetCart());
+      dispatch(logout()); // Dispatch logout from authSlice
+      // Dispatch resetCart to clear local shipping/payment info on logout
+      dispatch(resetCart()); // Dispatch resetCart from cartSlice
       navigate('/login');
       handleCloseUserMenu();
     } catch (err) {
@@ -104,20 +124,25 @@ const Header = () => {
           {!isMobile ? (
             <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
               <SearchBox />
-              
+
               <Box component={Link} to="/cart" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'white', ml: 2 }}>
-                <Badge badgeContent={cartItems.reduce((a, c) => a + c.qty, 0)} color="error">
-                  <ShoppingCart />
-                </Badge>
+                {/* Show loader or badge based on cart loading state and userInfo */}
+                {userInfo && isLoadingCart ? (
+                  <CircularProgress size={20} color="inherit" sx={{ mr: 1 }} />
+                ) : (
+                  <Badge badgeContent={cartItemCount} color="error">
+                    <ShoppingCart />
+                  </Badge>
+                )}
                 <Typography variant="body2" sx={{ ml: 1 }}>
-                  Cart 
+                  Cart
                 </Typography>
               </Box>
-              
+
               {userInfo ? (
                 <>
-                  <Button 
-                    color="inherit" 
+                  <Button
+                    color="inherit"
                     onClick={handleOpenUserMenu}
                     sx={{ ml: 2 }}
                   >
@@ -129,9 +154,9 @@ const Header = () => {
                     onClose={handleCloseUserMenu}
                     keepMounted
                   >
-                    <MenuItem 
-                      component={Link} 
-                      to="/profile" 
+                    <MenuItem
+                      component={Link}
+                      to="/profile"
                       onClick={handleCloseUserMenu}
                     >
                       Profile
@@ -142,9 +167,9 @@ const Header = () => {
                   </Menu>
                 </>
               ) : (
-                <Button 
-                  component={Link} 
-                  to="/login" 
+                <Button
+                  component={Link}
+                  to="/login"
                   color="inherit"
                   sx={{ ml: 2, display: 'flex', alignItems: 'center' }}
                 >
@@ -152,11 +177,11 @@ const Header = () => {
                   Sign In
                 </Button>
               )}
-              
+
               {userInfo && userInfo.isAdmin && (
                 <>
-                  <Button 
-                    color="inherit" 
+                  <Button
+                    color="inherit"
                     onClick={handleOpenAdminMenu}
                     sx={{ ml: 2 }}
                   >
@@ -202,71 +227,67 @@ const Header = () => {
               )}
             </Box>
           ) : (
-            <Drawer
-              anchor="left"
-              open={drawerOpen}
-              onClose={toggleDrawer(false)}
-            >
-              <Box
-                sx={{ width: 250 }}
-                role="presentation"
-                onClick={toggleDrawer(false)}
-                onKeyDown={toggleDrawer(false)}
-              >
-                <List>
-                  <ListItem button component={Link} to="/cart">
-                    <ShoppingCart sx={{ mr: 2 }} />
-                    <ListItemText primary="Cart" />
-                    {cartItems.length > 0 && (
-                      <Badge 
-                        badgeContent={cartItems.reduce((a, c) => a + c.qty, 0)} 
-                        color="success" 
-                      />
-                    )}
-                  </ListItem>
-                  
-                  {userInfo ? (
-                    <>
-                      <ListItem button component={Link} to="/profile">
-                        <ListItemText primary="Profile" />
-                      </ListItem>
-                      <ListItem button onClick={logoutHandler}>
-                        <ListItemText primary="Logout" />
-                      </ListItem>
-                    </>
-                  ) : (
-                    <ListItem button component={Link} to="/login">
-                      <Person sx={{ mr: 2 }} />
-                      <ListItemText primary="Sign In" />
-                    </ListItem>
-                  )}
-                  
-                  {userInfo && userInfo.isAdmin && (
-                    <>
-                      <ListItem>
-                        <ListItemText primary="ADMIN" sx={{ fontWeight: 'bold' }} />
-                      </ListItem>
-                      {/* Add Dashboard Link for mobile */}
-                      <ListItem button component={Link} to="/admin/dashboard">
-                        <ListItemText primary="Dashboard" />
-                      </ListItem>
-                      <ListItem button component={Link} to="/admin/productlist">
-                        <ListItemText primary="Products" />
-                      </ListItem>
-                      <ListItem button component={Link} to="/admin/orderlist">
-                        <ListItemText primary="Orders" />
-                      </ListItem>
-                      <ListItem button component={Link} to="/admin/userlist">
-                        <ListItemText primary="Users" />
-                      </ListItem>
-                    </>
-                  )}
-                </List>
-              </Box>
-            </Drawer>
+             // Mobile view - simplified cart icon logic
+             <Box sx={{ display: 'flex', alignItems: 'center' }}>
+               <IconButton component={Link} to="/cart" color="inherit" sx={{ ml: 'auto' }}>
+                 {userInfo && isLoadingCart ? (
+                   <CircularProgress size={20} color="inherit" />
+                 ) : (
+                   <Badge badgeContent={cartItemCount} color="error">
+                     <ShoppingCart />
+                   </Badge>
+                 )}
+               </IconButton>
+             </Box>
           )}
         </Toolbar>
       </Container>
+
+      {/* Mobile Drawer */}
+      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
+        <Box
+          sx={{ width: 250 }}
+          role="presentation"
+          onClick={toggleDrawer(false)}
+          onKeyDown={toggleDrawer(false)}
+        >
+          <Box sx={{ p: 2 }}>
+            <SearchBox />
+          </Box>
+          <List>
+            {userInfo ? (
+              <>
+                <ListItem button component={Link} to="/profile">
+                  <ListItemText primary="Profile" />
+                </ListItem>
+                {userInfo.isAdmin && (
+                  <>
+                    <ListItem button component={Link} to="/admin/dashboard">
+                      <ListItemText primary="Dashboard" />
+                    </ListItem>
+                    <ListItem button component={Link} to="/admin/productlist">
+                      <ListItemText primary="Products" />
+                    </ListItem>
+                    <ListItem button component={Link} to="/admin/orderlist">
+                      <ListItemText primary="Orders" />
+                    </ListItem>
+                    <ListItem button component={Link} to="/admin/userlist">
+                      <ListItemText primary="Users" />
+                    </ListItem>
+                  </>
+                )}
+                <ListItem button onClick={logoutHandler}>
+                  <ListItemText primary="Logout" />
+                </ListItem>
+              </>
+            ) : (
+              <ListItem button component={Link} to="/login">
+                <ListItemText primary="Sign In" />
+              </ListItem>
+            )}
+          </List>
+        </Box>
+      </Drawer>
     </AppBar>
   );
 };

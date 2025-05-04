@@ -46,6 +46,21 @@ const RegisterScreen = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
 
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // Password strength validation
+    // At least 8 characters, one uppercase, one lowercase, one number, one special character
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      toast.error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character');
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
     } else {

@@ -26,10 +26,20 @@ const ResetPasswordScreen = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    // Password strength validation
+    // At least 8 characters, one uppercase, one lowercase, one number, one special character
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      toast.error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character');
+      return;
+    }
+
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
       return;
     }
+
     try {
       await resetPassword({ token, password }).unwrap();
       toast.success('Password reset successfully');
@@ -66,6 +76,8 @@ const ResetPasswordScreen = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              // Add helper text for password requirements
+              helperText="Must be at least 8 characters and include uppercase, lowercase, number, and special character (@$!%*?&)."
             />
 
             <TextField

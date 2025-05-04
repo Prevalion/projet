@@ -5,33 +5,47 @@ import Product from '../models/productModel.js';
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-  const pageSize = 100; // Increased page size to show more products initially
+  const pageSize = 100;
   const page = Number(req.query.pageNumber) || 1;
 
   const keyword = req.query.keyword
     ? { name: { $regex: req.query.keyword, $options: 'i' } }
     : {};
 
-  // Define sorting options based on query parameters
+  // Define sorting options
   let sortOptions = {};
-  if (req.query.sortBy === 'price') {
-    sortOptions.price = req.query.sortOrder === 'desc' ? -1 : 1;
-  } else if (req.query.sortBy === 'rating') {
-    sortOptions.rating = req.query.sortOrder === 'desc' ? -1 : 1;
+  if (req.query.sort) {
+    if (req.query.sort === 'price_asc') {
+      sortOptions.price = 1;
+    } else if (req.query.sort === 'price_desc') {
+      sortOptions.price = -1;
+    } else if (req.query.sort === 'rating_desc') {
+      sortOptions.rating = -1;
+    }
   } else {
-    // Default sorting if no specific sort parameter is provided
-    sortOptions.createdAt = -1; // Example: sort by newest first
+    sortOptions.createdAt = -1; // Default sorting
   }
 
-  // Combine keyword filter and category filter
+  // Combine filters
   const filter = { ...keyword };
   if (req.query.category) {
-    filter.category = req.query.category;
+    filter.category = { $regex: `^${req.query.category}$`, $options: 'i' };
+  }
+  if (req.query.price) {
+    const [minPrice, maxPrice] = req.query.price.split('-').map(Number);
+    if (minPrice >= 0 && maxPrice > 0) {
+      filter.price = { $gte: minPrice, $lte: maxPrice };
+    } else if (minPrice >= 0 && maxPrice === 0) {
+      filter.price = { $gte: minPrice };
+    }
+  }
+  if (req.query.rating) {
+    filter.rating = { $gte: Number(req.query.rating) };
   }
 
   const count = await Product.countDocuments(filter);
   const products = await Product.find(filter)
-    .sort(sortOptions) // Apply sorting here
+    .sort(sortOptions)
     .limit(pageSize)
     .skip(pageSize * (page - 1));
 
@@ -42,15 +56,10 @@ const getProducts = asyncHandler(async (req, res) => {
 // @route   GET /api/products/:id
 // @access  Public
 const getProductById = asyncHandler(async (req, res) => {
-  // NOTE: checking for valid ObjectId to prevent CastError moved to separate
-  // middleware. See README for more info.
-
   const product = await Product.findById(req.params.id);
   if (product) {
     return res.json(product);
   } else {
-    // NOTE: this will run if a valid ObjectId but no product was found
-    // i.e. product may be null
     res.status(404);
     throw new Error('Product not found');
   }
@@ -66,7 +75,7 @@ const createProduct = asyncHandler(async (req, res) => {
     user: req.user._id,
     image: '/images/sample.jpg',
     brand: 'Sample brand',
-    category: 'Sample category',
+    category: 'Smart Home', // Updated default category
     countInStock: 0,
     numReviews: 0,
     description: 'Sample description',
@@ -123,7 +132,6 @@ const deleteProduct = asyncHandler(async (req, res) => {
 const createProductReview = asyncHandler(async (req, res) => {
   const { rating, comment } = req.body;
 
-  // Make sure to use the correct parameter name that matches your route
   const product = await Product.findById(req.params.id);
   
   if (!product) {
@@ -131,7 +139,6 @@ const createProductReview = asyncHandler(async (req, res) => {
     throw new Error('Product not found');
   }
   
-  // Check if user already submitted a review
   const alreadyReviewed = product.reviews.find(
     (review) => review.user.toString() === req.user._id.toString()
   );
@@ -151,7 +158,6 @@ const createProductReview = asyncHandler(async (req, res) => {
   product.reviews.push(review);
   product.numReviews = product.reviews.length;
   
-  // Calculate average rating
   product.rating =
     product.reviews.reduce((acc, item) => item.rating + acc, 0) /
     product.reviews.length;

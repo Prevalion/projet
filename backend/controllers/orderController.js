@@ -30,30 +30,40 @@ const addOrderItems = asyncHandler(async (req, res) => {
   try {
     // Get the ordered items from our database
     const itemsFromDB = await Product.find({
-      _id: { $in: orderItems.map((x) => x._id) },
+      // Correctly map product IDs from the nested structure
+      _id: { $in: orderItems.map((x) => x.product._id) },
     });
 
+    // Check if the number of items found matches the number requested
     if (!itemsFromDB || itemsFromDB.length !== orderItems.length) {
       res.status(400);
       throw new Error('Some products were not found');
-      return;
+      // No need for return here as throw exits the function
     }
 
     // Map over the order items and use the price from our items from database
     const dbOrderItems = orderItems.map((itemFromClient) => {
       const matchingItemFromDB = itemsFromDB.find(
-        (itemFromDB) => itemFromDB._id.toString() === itemFromClient._id
+        // Ensure comparison uses the correct ID field
+        (itemFromDB) => itemFromDB._id.toString() === itemFromClient.product._id
       );
-      
+
       if (!matchingItemFromDB) {
-        throw new Error(`Product not found: ${itemFromClient._id}`);
+        // This case should ideally not be reached if the previous check passed,
+        // but it's good practice to handle it.
+        throw new Error(`Product details not found for ID: ${itemFromClient.product._id}`);
       }
-      
+
+      // Construct the order item using DB price and client quantity/details
+      // Note: The original code was using itemFromClient._id which doesn't exist in the provided body structure.
+      // It should use itemFromClient.product._id for the product reference.
       return {
-        ...itemFromClient,
-        product: itemFromClient._id,
-        price: matchingItemFromDB.price,
-        _id: undefined,
+        name: itemFromClient.name, // Assuming name is sent directly in the item object
+        qty: itemFromClient.qty,   // Assuming qty is sent directly
+        image: itemFromClient.image, // Assuming image is sent directly
+        price: matchingItemFromDB.price, // Use price from DB
+        product: itemFromClient.product._id, // Reference the actual product ID
+        // Remove the incorrect _id: undefined line if it was present
       };
     });
 
@@ -85,8 +95,11 @@ const addOrderItems = asyncHandler(async (req, res) => {
 
     res.status(201).json(createdOrder);
   } catch (error) {
-    res.status(400);
-    throw error;
+    // Log the specific error for better debugging
+    console.error('Error creating order:', error);
+    // Ensure a proper status code is set based on the error type if possible
+    res.status(res.statusCode === 200 ? 400 : res.statusCode); // Keep existing status if already set, else 400
+    throw error; // Re-throw the error for the global error handler
   }
 });
 

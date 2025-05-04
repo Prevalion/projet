@@ -30,6 +30,7 @@ import {
 } from '../slices/cartApiSlice.jsx';
 import Meta from '../components/Meta';
 import Loader from '../components/Loader'; // Keep Loader for initial loading
+import { toast } from 'react-toastify'; // <-- Add this line
 
 const CartScreen = () => {
   const navigate = useNavigate();
@@ -47,7 +48,8 @@ const CartScreen = () => {
   // Update handler to use useUpdateItemMutation
   const updateCartHandler = async (item, qty) => {
     try {
-      await updateItem({ productId: item.product, qty: Number(qty) }).unwrap();
+      // Pass item.product._id instead of the whole item.product object
+      await updateItem({ productId: item.product._id, qty: Number(qty) }).unwrap();
       // No need to dispatch, RTK Query handles cache update via invalidation
       // refetch(); // Optionally refetch if needed, but invalidation should work
     } catch (err) {
@@ -56,7 +58,7 @@ const CartScreen = () => {
   };
 
   // Update handler to use useRemoveItemMutation
-  const removeFromCartHandler = async (productId) => {
+  const removeFromCartHandler = async (productId) => { // Keep parameter name as productId
     try {
       await removeItem(productId).unwrap();
       // No need to dispatch
@@ -98,7 +100,7 @@ const CartScreen = () => {
         ) : (
           <List sx={{ width: '100%' }}>
             {cartItems.map((item) => (
-              <Paper key={item.product} elevation={1} sx={{ mb: 2, p: 2, position: 'relative' }}>
+              <Paper key={item.product._id} elevation={1} sx={{ mb: 2, p: 2, position: 'relative' }}> {/* Use item.product._id for key */}
                  {/* Add overlay for loading states */}
                  {(isUpdatingItem || isRemovingItem) && (
                    <Box sx={{
@@ -131,8 +133,8 @@ const CartScreen = () => {
                   <Grid item xs={12} sm={3}>
                     <Typography
                       component={Link}
-                      // Use item.product for the link ID
-                      to={`/product/${item.product}`}
+                      // Use item.product._id for the link ID
+                      to={`/product/${item.product._id}`} // <--- Corrected line
                       variant="body1"
                       sx={{ fontWeight: 500, color: 'text.primary', textDecoration: 'none', '&:hover': { color: 'primary.main' } }}
                     >
@@ -155,8 +157,8 @@ const CartScreen = () => {
                       disabled={isUpdatingItem || isRemovingItem}
                       sx={{ minWidth: '70px' }}
                     >
-                      {/* Use item.productDetails?.countInStock or a reasonable max */}
-                      {[...Array(item.productDetails?.countInStock || 10).keys()].map((x) => (
+                      {/* Use item.countInStock or a reasonable max */}
+                      {[...Array(item.countInStock || 10).keys()].map((x) => (
                         <MenuItem key={x + 1} value={x + 1}>
                           {x + 1}
                         </MenuItem>
@@ -166,10 +168,9 @@ const CartScreen = () => {
                   <Grid item xs={4} sm={2} sx={{ textAlign: 'right' }}>
                     <IconButton
                       aria-label="delete"
-                      // Call removeFromCartHandler with item.product ID
-                      onClick={() => removeFromCartHandler(item.product)}
+                      // Pass item.product._id to the handler
+                      onClick={() => removeFromCartHandler(item.product._id)}
                       color="error"
-                      // Disable while removing or updating
                       disabled={isUpdatingItem || isRemovingItem}
                     >
                       <Delete />

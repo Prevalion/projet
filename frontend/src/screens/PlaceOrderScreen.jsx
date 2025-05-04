@@ -1,10 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom'; // Renamed Link
 import { toast } from 'react-toastify';
-// Removed PayPal imports
-// import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
-// Removed react-bootstrap imports: Button, Row, Col, ListGroup, Image, Card
-// import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap';
+
 import {
   Grid, // Replaces Row, Col
   List, // Replaces ListGroup
@@ -26,30 +23,22 @@ import Loader from '../components/Loader';
 // Updated imports for order API slice
 import {
   useCreateOrderMutation,
-  // Removed unused PayPal hooks
-  // usePayOrderMutation,
-  // useGetPaypalClientIdQuery,
 } from '../slices/ordersApiSlice';
-import { clearCartItems } from '../slices/cartSlice';
+import { useClearCartMutation } from '../slices/cartApiSlice.jsx';
 import Meta from '../components/Meta'; // Import Meta component
 
 const PlaceOrderScreen = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  // Remove dispatch if no longer needed after removing clearCartItems
+  // const dispatch = useDispatch();
 
   const cart = useSelector((state) => state.cart);
   const { userInfo } = useSelector((state) => state.auth); // Get user info
 
   const [createOrder, { isLoading: loadingCreateOrder, error: createOrderError }] = useCreateOrderMutation();
-  // Removed PayPal hooks
-  // const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
-  // const { data: paypal, isLoading: loadingPayPal, error: errorPayPal } = useGetPaypalClientIdQuery();
-  // const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
-
-  // Removed PayPal useEffect
-  // useEffect(() => {
-  //   if (!errorPayPal && !loadingPayPal && paypal.clientId) { ... }
-  // }, [errorPayPal, loadingPayPal, paypal, paypalDispatch, cart.paymentMethod]);
+  // Add the clearCart mutation hook
+  const [clearCart, { isLoading: loadingClearCart }] = useClearCartMutation();
+  
 
   useEffect(() => {
     // Redirect to login if not logged in
@@ -79,12 +68,19 @@ const PlaceOrderScreen = () => {
         taxPrice: cart.taxPrice,
         totalPrice: cart.totalPrice,
       }).unwrap();
-      dispatch(clearCartItems());
+
+      // Call clearCart mutation after successful order creation
+      await clearCart().unwrap();
+
+      // Remove the old dispatch(clearCartItems());
+      // dispatch(clearCartItems());
+
       // Navigate to the order screen, payment happens there now
       navigate(`/order/${res._id}`);
       toast.success('Order placed successfully! Proceed to payment.'); // Updated toast message
     } catch (err) {
-      toast.error(err?.data?.message || err?.error || 'Failed to place order');
+      // Handle potential errors from both createOrder and clearCart
+      toast.error(err?.data?.message || err?.error || 'Failed to place order or clear cart');
     }
   };
 
@@ -224,12 +220,12 @@ const PlaceOrderScreen = () => {
                     variant="contained"
                     color="primary"
                     fullWidth
-                    disabled={cart.cartItems === 0 || loadingCreateOrder}
+                    disabled={cart.cartItems === 0 || loadingCreateOrder || loadingClearCart} // Disable button during API calls
                     onClick={placeOrderHandler}
                     sx={{ mt: 2, py: 1.5, fontWeight: 500 }}
                   >
-                    Place Order
-                    {loadingCreateOrder && <CircularProgress size={24} sx={{ ml: 1, color: 'white' }} />}
+                    {/* Show loading indicator */}
+                    {loadingCreateOrder || loadingClearCart ? <CircularProgress size={24} color="inherit" /> : 'Place Order'}
                   </Button>
                 </ListItem>
                 {/* Removed PayPal Button Section */}

@@ -176,20 +176,13 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 // @route   GET /api/orders/:id/deliver
 // @access  Private/Admin
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
-  // Ensure user is authenticated and is admin - This check was missing before the main logic
-  // if (!req.user || !req.user.isAdmin) { // Simplified check assuming protect middleware ran
-  //   res.status(401);
-  //   throw new Error('Not authorized as an admin');
-  // }
-  // Note: The protect and admin middleware should already handle auth checks if applied correctly in orderRoutes.js
-
-  const order = await Order.findById(req.params.id); // Fetch the order first
+  const order = await Order.findById(req.params.id);
 
   if (order) {
-    // Check if the order is already delivered
-    if (order.isDelivered) {
-      res.status(400);
-      throw new Error('Order already delivered');
+    // Add this check: Ensure the order is paid first
+    if (!order.isPaid) {
+      res.status(400); // Bad Request
+      throw new Error('Order must be paid before it can be marked as delivered');
     }
 
     order.isDelivered = true;
@@ -197,7 +190,7 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
 
     const updatedOrder = await order.save();
 
-    res.status(200).json(updatedOrder); // Send 200 OK status
+    res.json(updatedOrder);
   } else {
     res.status(404);
     throw new Error('Order not found');

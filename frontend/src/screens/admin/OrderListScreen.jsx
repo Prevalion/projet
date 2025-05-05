@@ -103,7 +103,10 @@ const OrderListScreen = () => {
                         size="small"
                         startIcon={<LocalShippingIcon />}
                         onClick={() => deliverHandler(order._id)}
-                        disabled={loadingDeliver}
+                        // Disable if loading OR if the order is not paid
+                        disabled={loadingDeliver || !order.isPaid}
+                        // Add a title to explain why it might be disabled
+                        title={!order.isPaid ? 'Order must be paid first' : 'Mark as Delivered'}
                         sx={{ minWidth: 'auto', p: '2px 8px' }} // Adjust padding for smaller button
                       >
                         Deliver

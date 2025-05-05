@@ -27,8 +27,11 @@ const orderSchema = mongoose.Schema(
       country: { type: String, required: true },
     },
     paymentMethod: {
-      type: String,
-      required: true,
+      // Change from String to Object
+      type: { type: String, required: true }, // e.g., 'Credit Card', 'PayPal'
+      cardType: { type: String }, // e.g., 'Visa', 'Mastercard' - Only required for Credit Card
+      lastFour: { type: String }, // Last 4 digits - Only required for Credit Card
+      // Add other fields if needed, e.g., paymentIntentId for Stripe
     },
     paymentResult: {
       id: { type: String },

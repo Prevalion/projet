@@ -18,7 +18,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
   const {
     orderItems,
     shippingAddress,
-    paymentMethod,
+    paymentMethod, // Destructured from req.body
   } = req.body;
 
   if (!orderItems || orderItems.length === 0) {
@@ -75,7 +75,7 @@ const addOrderItems = asyncHandler(async (req, res) => {
       orderItems: dbOrderItems,
       user: req.user._id,
       shippingAddress,
-      paymentMethod,
+      paymentMethod, // Directly uses the object from req.body
       itemsPrice,
       taxPrice,
       shippingPrice,
@@ -146,6 +146,13 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
   if (order) {
+    // Ensure paymentMethod and paymentMethod.type exist before saving
+    if (!order.paymentMethod) {
+      order.paymentMethod = { type: 'Manual Payment' }; // Provide a default object
+    } else if (!order.paymentMethod.type) {
+      order.paymentMethod.type = 'Manual Payment'; // Provide a default type if object exists but type is missing
+    }
+
     order.isPaid = true;
     order.paidAt = Date.now();
     // Optionally store generic payment result if needed, e.g., from a test button
@@ -156,7 +163,7 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
       email_address: req.body.payer?.email_address || req.user.email, // Use payer email or user email
     };
 
-    const updatedOrder = await order.save();
+    const updatedOrder = await order.save(); // Validation should now pass
 
     res.json(updatedOrder);
   } else {

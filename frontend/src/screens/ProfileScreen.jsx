@@ -69,12 +69,25 @@ const ProfileScreen = () => {
     e.preventDefault();
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
-    } else {
+      return; // Added return to stop execution if passwords don't match
+    }
+
+    // Added password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (password && !passwordRegex.test(password)) { // Check only if password is not empty
+      toast.error('Password must be at least 8 characters and include uppercase, lowercase, number, and special character');
+      return;
+    }
+    // End of added password validation
+
+    // Only proceed if password is empty or valid and matches confirmation
+    if (password === confirmPassword) { // Ensure this check still makes sense, maybe adjust logic if password can be optional
       try {
         const res = await updateProfile({
           name,
           email,
-          password,
+          // Conditionally include password only if it's being changed
+          ...(password && { password }),
         }).unwrap();
         dispatch(setCredentials({ ...res }));
         toast.success('Profile updated successfully');

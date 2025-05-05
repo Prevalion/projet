@@ -470,14 +470,6 @@ const PaymentScreen = () => {
             }}
           />
 
-          {cardType && (
-            <Box sx={{ mt: 2, mb: 1 }}>
-              <FormHelperText>
-                {`You're paying with a ${cardType} card ending in ${cardNumber.replace(/\D/g, '').slice(-4)}`}
-              </FormHelperText>
-            </Box>
-          )}
-
           <Button
             type="submit"
             variant="contained"

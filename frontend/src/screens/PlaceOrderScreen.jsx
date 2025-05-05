@@ -115,7 +115,10 @@ const PlaceOrderScreen = () => {
                 <Typography variant="h5" component="h2" gutterBottom sx={{ fontWeight: 500 }}>Payment Method</Typography>
                 <Typography variant="body1">
                   <strong>Method: </strong>
-                  {cart.paymentMethod} {/* This will now display "Credit Card" */}
+                  {/* Render the type property or format the details */}
+                  {cart.paymentMethod?.type === 'Credit Card' 
+                    ? `${cart.paymentMethod.type} (${cart.paymentMethod.cardType} ending in ${cart.paymentMethod.lastFour})` 
+                    : cart.paymentMethod?.type || 'Not Selected'}
                 </Typography>
               </Paper>
             </ListItem>

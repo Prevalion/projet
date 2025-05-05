@@ -102,7 +102,13 @@ const OrderScreen = () => {
             <Divider />
             <ListItem sx={{ flexDirection: 'column', alignItems: 'flex-start' }}>
               <Typography variant="h6" gutterBottom>Payment Method</Typography>
-              <Typography><strong>Method:</strong> {order.paymentMethod}</Typography>
+              <Typography>
+                <strong>Method:</strong> 
+                {/* Add check for string type */}
+                {typeof order.paymentMethod === 'string' 
+                  ? order.paymentMethod 
+                  : 'Invalid Payment Method Data' /* Or render nothing, or log an error */}
+              </Typography>
               {order.isPaid ? (
                 <Alert severity="success" sx={{ mt: 1, width: '100%' }}>Paid on {order.paidAt?.substring(0, 10)}</Alert>
               ) : (

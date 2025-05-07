@@ -56,7 +56,8 @@ services:
     privileged: true
     devices: 
       - "/dev/kmsg"
-
+    networks:
+      - proshop-network
   prometheus:
     container_name: prometheus
     image: prom/prometheus:latest
@@ -67,7 +68,8 @@ services:
     privileged: true
     depends_on:
       - cadvisor
-
+    networks:
+      - proshop-network
   grafana:
     container_name: grafana
     image: grafana/grafana:latest
@@ -84,6 +86,8 @@ services:
     privileged: true
     depends_on:
       - prometheus
+    networks:
+      - proshop-network
 
 networks:
   proshop-network:

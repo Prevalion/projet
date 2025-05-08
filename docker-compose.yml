@@ -13,11 +13,17 @@ services:
       - PORT=5000
       - MONGO_URI=mongodb://mongo:27017/proshop
       - JWT_SECRET=abc123
-      - PAYPAL_CLIENT_ID=your_paypal_client_id
+      - ENABLE_METRICS=true
     depends_on:
       - mongo
     networks:
       - proshop-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
   frontend:
     build: ./frontend
@@ -31,6 +37,12 @@ services:
       - backend
     networks:
       - proshop-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
   mongo:
     image: mongo:4.4
@@ -42,6 +54,13 @@ services:
       - mongo-data:/data/db
     networks:
       - proshop-network
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   cadvisor:
     container_name: cadvisor
     image: gcr.io/cadvisor/cadvisor:latest
@@ -58,31 +77,41 @@ services:
       - "/dev/kmsg"
     networks:
       - proshop-network
+
   prometheus:
     container_name: prometheus
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
-    volumes: 
-      - "./prometheus.yml:/etc/prometheus/prometheus.yml"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
     privileged: true
     depends_on:
       - cadvisor
     networks:
       - proshop-network
+
   grafana:
     container_name: grafana
     image: grafana/grafana:latest
     ports:
       - "4000:3000"
     environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-changeme123}
+      - GF_USERS_ALLOW_SIGN_UP=false
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - DS_PROMETHEUS=prometheus
-    volumes: 
-      - "grafana-data:/var/lib/grafana"
-      - "./datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml"
-      - "./dashboard.json:/var/lib/grafana/dashboards/dashboard.json"
-      - "./default.yaml:/etc/grafana/provisioning/dashboards/default.yaml"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
     privileged: true
     depends_on:
       - prometheus
@@ -95,5 +124,6 @@ networks:
 
 volumes:
   grafana-data:
+  prometheus-data:
   mongo-data:
     driver: local

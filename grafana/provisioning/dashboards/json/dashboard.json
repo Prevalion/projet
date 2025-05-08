@@ -15,7 +15,7 @@
         }
       ]
     },
-    "description": "Docker monitoring with Prometheus and cAdvisor",
+    "description": "Docker monitoring with prometheus and cAdvisor",
     "editable": true,
     "fiscalYearStartMonth": 0,
     "gnetId": 193,
@@ -25,10 +25,7 @@
     "liveNow": false,
     "panels": [
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "prometheus",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -105,10 +102,7 @@
         "type": "stat"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "prometheus",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -185,10 +179,7 @@
         "type": "stat"
       },
       {
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "prometheus",
         "fieldConfig": {
           "defaults": {
             "color": {
@@ -269,10 +260,7 @@
         "bars": false,
         "dashLength": 10,
         "dashes": false,
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "prometheus",
         "decimals": 2,
         "editable": true,
         "error": false,
@@ -364,10 +352,7 @@
         "bars": false,
         "dashLength": 10,
         "dashes": false,
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "prometheus",
         "decimals": 2,
         "editable": true,
         "error": false,
@@ -461,10 +446,7 @@
         "bars": false,
         "dashLength": 10,
         "dashes": false,
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "prometheus",
         "editable": true,
         "error": false,
         "fill": 1,
@@ -553,10 +535,7 @@
         "bars": false,
         "dashLength": 10,
         "dashes": false,
-        "datasource": {
-          "type": "prometheus",
-          "uid": "prometheus"
-        },
+        "datasource": "prometheus",
         "editable": true,
         "error": false,
         "fill": 1,

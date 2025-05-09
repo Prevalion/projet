@@ -1,11 +1,3 @@
 node_modules
 .env
-frontend/add to src/App.css
-frontend/add to src/App.jsx
-frontend/add to src/index.css
-frontend/add to src/main.jsx
-frontend/add to src/assets/react.svg
-frontend/add to src/components/Login.jsx
-frontend/add to src/components/OTPInput.jsx
-frontend/add to src/components/Recovered.jsx
-frontend/add to src/components/Reset.jsx
+run.bat

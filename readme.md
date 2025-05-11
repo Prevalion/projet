@@ -13,7 +13,6 @@
 * Admin Order details page
 * Mark orders as delivered option
 * Checkout process (shipping, payment method, etc)
-* PayPal / credit card integration
 * Database seeder (products & users)
 * **Basic Security:** Helmet, Rate Limiting, Input Sanitization
 * **Structured Logging:** Pino for backend logging
@@ -34,7 +33,6 @@
         * `PORT` (e.g., 5000)
         * `MONGO_URI` (Your MongoDB connection string)
         * `JWT_SECRET` (A long, random, secret string)
-        * `PAYPAL_CLIENT_ID` (Your PayPal Sandbox or Live Client ID)
     * Install dependencies: `npm install`
 
 3.  **Frontend Setup:**
@@ -88,7 +86,6 @@
 * `MONGO_URI`: Your MongoDB connection string
 * `JWT_SECRET`: Secret key for signing JWTs (make this strong and keep it secret)
 * `JWT_EXPIRES_IN`: Token expiration time (e.g., `30d`)
-* `PAYPAL_CLIENT_ID`: Your PayPal application client ID
 
 ## Linting and Formatting
 

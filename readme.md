@@ -1,4 +1,4 @@
-# Vente - MERN E-commerce Platform
+# TechZone Store - MERN E-commerce Platform
 
 ## Features
 

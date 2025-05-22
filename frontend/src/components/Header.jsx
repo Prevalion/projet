@@ -13,13 +13,14 @@ import {
   Drawer,
   List,
   ListItem,
+  ListItemIcon, // Ensure ListItemIcon is imported if you use it elsewhere, or remove if not needed
   ListItemText,
   useMediaQuery,
   useTheme,
   InputBase,
   CircularProgress // Import CircularProgress
 } from '@mui/material';
-import { ShoppingCart, Person, Menu as MenuIcon, Assessment } from '@mui/icons-material'; // Added Assessment icon
+import { ShoppingCart, Person, Menu as MenuIcon } from '@mui/icons-material'; // Removed Assessment icon import
 // Remove useDispatch and resetCart if only used here for logout
 // import { useSelector, useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux'; // Keep for userInfo
@@ -230,7 +231,7 @@ const Header = () => {
                     </MenuItem>
                     {/* Add System Stats Link */}
                     <MenuItem onClick={handleSystemStatsClick}>
-                      <Assessment sx={{ mr: 1 }} /> System Stats
+                      System Stats
                     </MenuItem>
                   </Menu>
                 </>

@@ -271,9 +271,6 @@ const Header = () => {
           onKeyDown={toggleDrawer(false)}
         >
           {/* Optional: You might want to keep SearchBox in the drawer or remove it based on your preference */}
-          <Box sx={{ p: 2 }}>
-            <SearchBox />
-          </Box>
           <List>
             {userInfo ? (
               <>

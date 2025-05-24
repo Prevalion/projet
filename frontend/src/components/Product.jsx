@@ -1,71 +1,91 @@
-import { Card, CardMedia, CardContent, Typography, Box } from '@mui/material';
+import { Card, CardMedia, CardContent, Typography, Box, Rating } from '@mui/material';
 import { Link } from 'react-router-dom';
-import Rating from './Rating.jsx';
 
-const Product = ({ product }) => {
+const Product = ({ product, sx }) => {
   return (
-    <Card sx={{ 
-      height: '100%', 
-      display: 'flex', 
-      flexDirection: 'column',
-      transition: '0.3s',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      '&:hover': {
-        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-      },
-      borderRadius: '8px',
-      overflow: 'hidden'
-    }}>
-      <Link to={`/product/${product._id}`} style={{ textDecoration: 'none' }}>
-        <CardMedia
-          component="img"
-          image={product.image}
-          alt={product.name}
-          sx={{ 
-            height: 180,
-            objectFit: 'contain',
-            padding: '10px',
-            backgroundColor: '#f8f9fa'
+    <Card
+      component={Link}
+      to={`/product/${product._id}`}
+      sx={{
+        textDecoration: 'none',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+        },
+        ...sx,
+      }}
+    >
+      {/* Product Image */}
+      <CardMedia
+        component="img"
+        sx={{
+          height: 200, // Fixed image height
+          width: '100%',
+          objectFit: 'cover', // Ensures image covers the area properly
+          objectPosition: 'center',
+        }}
+        image={product.image}
+        alt={product.name}
+      />
+      
+      {/* Product Content */}
+      <CardContent
+        sx={{
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          p: 2,
+        }}
+      >
+        {/* Product Name */}
+        <Typography
+          variant="h6"
+          component="h3"
+          sx={{
+            fontWeight: 500,
+            fontSize: '1rem',
+            lineHeight: 1.3,
+            mb: 1,
+            height: '2.6em', // Fixed height for 2 lines
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            color: '#333',
           }}
-        />
-      </Link>
+        >
+          {product.name}
+        </Typography>
 
-      <CardContent sx={{ 
-        flexGrow: 1, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'space-between',
-        p: 2 
-      }}>
-        <Link to={`/product/${product._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-          <Typography 
-            variant="subtitle1" 
-            component="div" 
-            className='product-title'
-            sx={{ 
-              fontWeight: 'bold',
-              mb: 1,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              lineHeight: '1.2em',
-              height: '2.4em'
-            }}
-          >
-            {product.name}
-          </Typography>
-        </Link>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+        {/* Rating */}
+        <Box sx={{ mb: 1 }}>
           <Rating
             value={product.rating}
-            text={`${product.numReviews} reviews`}
+            precision={0.5}
+            readOnly
+            size="small"
+            sx={{ mb: 0.5 }}
           />
+          <Typography variant="body2" color="text.secondary">
+            {product.numReviews} reviews
+          </Typography>
         </Box>
 
-        <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
+        {/* Price */}
+        <Typography
+          variant="h5"
+          component="div"
+          sx={{
+            fontWeight: 600,
+            color: '#1976d2',
+            mt: 'auto', // Pushes price to bottom
+          }}
+        >
           ${product.price}
         </Typography>
       </CardContent>

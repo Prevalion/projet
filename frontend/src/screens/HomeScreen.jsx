@@ -160,7 +160,7 @@ const HomeScreen = () => {
         </Container>
       )}
 
-      {/* Products Grid Section - 2x4 Layout */}
+      {/* Products Grid Section - 2x4 Layout with Fixed Dimensions */}
       <Box id="products-section" sx={{ bgcolor: '#f5f5f5', py: 4 }}>
         <Container>
           <Typography
@@ -177,7 +177,7 @@ const HomeScreen = () => {
             {keyword ? `Search Results for "${keyword}"` : 'Latest Products'}
           </Typography>
 
-          {/* 2x4 Grid Layout */}
+          {/* 2x4 Grid Layout with Consistent Dimensions */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {displayProducts.map((product) => (
               <Grid 
@@ -190,9 +190,27 @@ const HomeScreen = () => {
                 sx={{
                   display: 'flex',
                   justifyContent: 'center',
+                  alignItems: 'stretch', // Ensures all items stretch to same height
                 }}
               >
-                <Product product={product} />
+                <Box
+                  sx={{
+                    width: '100%',
+                    maxWidth: 280, // Fixed maximum width
+                    height: 420, // Fixed height for all product cards
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <Product 
+                    product={product} 
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  />
+                </Box>
               </Grid>
             ))}
           </Grid>

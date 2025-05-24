@@ -239,7 +239,11 @@ const Header = () => {
             </Box>
           ) : (
              // Mobile view - simplified cart icon logic
-             <Box sx={{ display: 'flex', alignItems: 'center' }}>
+             <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}> {/* Added flexGrow: 1 to allow SearchBox to take available space */}
+               {/* Add SearchBox here for mobile view */}
+               <Box sx={{ flexGrow: 1, mr: 1 }}> {/* Wrapper for SearchBox to allow it to expand */}
+                 <SearchBox />
+               </Box>
                <IconButton component={Link} to="/cart" color="inherit" sx={{ ml: 'auto' }}>
                  {userInfo && isLoadingCart ? (
                    <CircularProgress size={20} color="inherit" />
@@ -262,9 +266,12 @@ const Header = () => {
           onClick={toggleDrawer(false)}
           onKeyDown={toggleDrawer(false)}
         >
+          {/* Remove SearchBox from here */}
+          {/* 
           <Box sx={{ p: 2 }}>
             <SearchBox />
           </Box>
+          */}
           <List>
             {userInfo ? (
               <>

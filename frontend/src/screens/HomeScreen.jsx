@@ -160,7 +160,7 @@ const HomeScreen = () => {
         </Container>
       )}
 
-      {/* Products Grid Section - 2x4 Layout with Fixed Dimensions */}
+      {/* Products Grid Section - Responsive Layout */}
       <Box id="products-section" sx={{ bgcolor: '#f5f5f5', py: 4 }}>
         <Container>
           <Typography
@@ -172,32 +172,33 @@ const HomeScreen = () => {
               color: '#2c2c2c',
               fontWeight: 600,
               textAlign: { xs: 'center', md: 'left' },
+              fontSize: { xs: '1.5rem', md: '2rem' }, // Smaller font on mobile
             }}
           >
             {keyword ? `Search Results for "${keyword}"` : 'Latest Products'}
           </Typography>
 
-          {/* 2x4 Grid Layout with Consistent Dimensions */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          {/* Responsive Grid Layout */}
+          <Grid container spacing={{ xs: 2, md: 3 }} sx={{ mb: 4 }}>
             {displayProducts.map((product) => (
               <Grid 
                 item 
                 key={product._id} 
-                xs={12} 
+                xs={6} // 2 products per row on mobile
                 sm={6} 
                 md={3} 
                 lg={3}
                 sx={{
                   display: 'flex',
                   justifyContent: 'center',
-                  alignItems: 'stretch', // Ensures all items stretch to same height
+                  alignItems: 'stretch',
                 }}
               >
                 <Box
                   sx={{
                     width: '100%',
-                    maxWidth: 280, // Fixed maximum width
-                    height: 420, // Fixed height for all product cards
+                    maxWidth: { xs: 180, sm: 220, md: 280 }, // Responsive max width
+                    height: { xs: 320, sm: 380, md: 420 }, // Responsive height
                     display: 'flex',
                     flexDirection: 'column',
                   }}
@@ -219,11 +220,11 @@ const HomeScreen = () => {
           {totalPages > 1 && (
             <Box 
               sx={{ 
-                mt: 5, 
+                mt: { xs: 3, md: 5 }, // Less margin on mobile
                 display: 'flex', 
                 justifyContent: 'center',
                 borderTop: '1px solid #e0e0e0',
-                pt: 4,
+                pt: { xs: 2, md: 4 }, // Less padding on mobile
               }}
             >
               {!keyword ? (

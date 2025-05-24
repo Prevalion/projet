@@ -176,6 +176,10 @@ const HomeScreen = () => {
                   borderRadius: 2,
                   textTransform: 'none',
                   fontSize: '1.1rem',
+                  bgcolor: '#333',
+                  '&:hover': {
+                    bgcolor: '#555',
+                  },
                 }}
               >
                 View All Products
@@ -183,24 +187,22 @@ const HomeScreen = () => {
             </Box>
           )}
 
-          {/* Pagination - Only show when searching or on products page */}
-          {(keyword || data.pages > 1) && (
-            <Box 
-              sx={{ 
-                mt: 5, 
-                display: 'flex', 
-                justifyContent: 'center',
-                borderTop: '1px solid #e0e0e0',
-                pt: 4,
-              }}
-            >
-              <Paginate
-                pages={data.pages}
-                page={data.page}
-                keyword={keyword || ''}
-              />
-            </Box>
-          )}
+          {/* Pagination - Always show */}
+          <Box 
+            sx={{ 
+              mt: 5, 
+              display: 'flex', 
+              justifyContent: 'center',
+              borderTop: '1px solid #e0e0e0',
+              pt: 4,
+            }}
+          >
+            <Paginate
+              pages={data.pages}
+              page={data.page}
+              keyword={keyword || ''}
+            />
+          </Box>
         </Container>
       </Box>
     </>

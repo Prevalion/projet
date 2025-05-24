@@ -243,7 +243,7 @@ const Header = () => {
              <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}> {/* Use ml: 'auto' to push icons to the right */}
                <IconButton
                 color="inherit"
-                // onClick={/* Define search action here, e.g., open a search modal or navigate to search page */}
+                onClick={() => navigate('/search')} // Navigate to /search on click
                 aria-label="search products"
                >
                  <SearchIcon />

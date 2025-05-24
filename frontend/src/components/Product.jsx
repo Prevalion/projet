@@ -25,8 +25,10 @@ const Product = ({ product, sx }) => {
         sx={{
           height: 200, // Fixed image height
           width: '100%',
-          objectFit: 'cover', // Ensures image covers the area properly
+          objectFit: 'contain', // Changed from 'cover' to 'contain' to show full image
           objectPosition: 'center',
+          backgroundColor: '#f5f5f5', // Add background color for padding around image
+          p: 1, // Add padding around the image
         }}
         image={product.image}
         alt={product.name}
@@ -82,7 +84,7 @@ const Product = ({ product, sx }) => {
           component="div"
           sx={{
             fontWeight: 600,
-            color: '#1976d2',
+            color: '#000', // Changed back to black/default color
             mt: 'auto', // Pushes price to bottom
           }}
         >

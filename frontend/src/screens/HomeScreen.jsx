@@ -34,15 +34,26 @@ const HomeScreen = () => {
     return productsCopy;
   }, [data?.products]);
 
+  // Limit products to 8 for 2x4 grid layout
+  const displayProducts = useMemo(() => {
+    if (!data?.products) return [];
+    return data.products.slice(0, 8);
+  }, [data?.products]);
+
   // Handle loading state
   if (isLoading) {
-    return <Loader />;
+    return (
+      <Container sx={{ py: 4 }}>
+        <Meta />
+        <Loader />
+      </Container>
+    );
   }
 
   // Handle error state
   if (error) {
     return (
-      <Container>
+      <Container sx={{ py: 4 }}>
         <Meta />
         <Message variant="danger">
           {error?.data?.message || error.error}
@@ -54,7 +65,7 @@ const HomeScreen = () => {
   // Handle empty products state
   if (!data?.products || data.products.length === 0) {
     return (
-      <Container>
+      <Container sx={{ py: 4 }}>
         <Meta />
         {keyword && (
           <Button
@@ -87,7 +98,9 @@ const HomeScreen = () => {
           sx={{
             mb: 4,
             width: '100vw',
-            marginLeft: 'calc(-50vw + 50%)',
+            position: 'relative',
+            left: '50%',
+            transform: 'translateX(-50.4%)',
             overflow: 'hidden',
           }}
         >
@@ -104,39 +117,83 @@ const HomeScreen = () => {
             variant="outlined"
             color="primary"
             sx={{ mb: 4 }}
+            startIcon={<span>←</span>}
           >
             Go Back
           </Button>
         </Container>
       )}
 
-      {/* Products Grid Section */}
-      <Box sx={{ bgcolor: '#f5f5f5', py: 3 }}>
+      {/* Products Grid Section - 2x4 Layout */}
+      <Box sx={{ bgcolor: '#f5f5f5', py: 4 }}>
         <Container>
           <Typography
-            variant="h5"
-            component="h2"
+            variant="h4"
+            component="h1"
             gutterBottom
             sx={{
-              mb: 3,
-              color: '#4a4a4a',
-              fontWeight: 500,
+              mb: 4,
+              color: '#2c2c2c',
+              fontWeight: 600,
+              textAlign: { xs: 'center', md: 'left' },
             }}
           >
             {keyword ? `Search Results for "${keyword}"` : 'Latest Products'}
           </Typography>
 
-          <Grid container spacing={3}>
-            {data.products.map((product) => (
-              <Grid item key={product._id} xs={12} sm={6} md={4} lg={3}>
+          {/* 2x4 Grid Layout */}
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            {displayProducts.map((product) => (
+              <Grid 
+                item 
+                key={product._id} 
+                xs={12} 
+                sm={6} 
+                md={3} 
+                lg={3}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                }}
+              >
                 <Product product={product} />
               </Grid>
             ))}
           </Grid>
 
-          {/* Pagination */}
-          {data.pages > 1 && (
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+          {/* Show "View All Products" button if there are more than 8 products */}
+          {data.products.length > 8 && !keyword && (
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Button
+                component={Link}
+                to="/products"
+                variant="contained"
+                color="primary"
+                size="large"
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontSize: '1.1rem',
+                }}
+              >
+                View All Products
+              </Button>
+            </Box>
+          )}
+
+          {/* Pagination - Only show when searching or on products page */}
+          {(keyword || data.pages > 1) && (
+            <Box 
+              sx={{ 
+                mt: 5, 
+                display: 'flex', 
+                justifyContent: 'center',
+                borderTop: '1px solid #e0e0e0',
+                pt: 4,
+              }}
+            >
               <Paginate
                 pages={data.pages}
                 page={data.page}

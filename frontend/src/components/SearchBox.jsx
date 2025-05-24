@@ -27,7 +27,8 @@ const SearchBox = () => {
         backgroundColor: 'white', 
         borderRadius: '4px',
         padding: '0 10px',
-        width: '300px'
+        width: '100%',  // Change to 100% to be responsive
+        maxWidth: '300px'  // Add maxWidth to limit size in larger screens
       }}
     >
       <InputBase

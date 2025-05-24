@@ -34,11 +34,30 @@ const HomeScreen = () => {
     return productsCopy;
   }, [data?.products]);
 
-  // Limit products to 8 for 2x4 grid layout
+  // For home page, show 8 products per page in 2x4 grid
   const displayProducts = useMemo(() => {
     if (!data?.products) return [];
-    return data.products.slice(0, 8);
-  }, [data?.products]);
+    
+    // If we're on home page (no keyword), paginate 8 products at a time
+    if (!keyword) {
+      const currentPage = parseInt(pageNumber) || 1;
+      const productsPerPage = 8;
+      const startIndex = (currentPage - 1) * productsPerPage;
+      const endIndex = startIndex + productsPerPage;
+      return data.products.slice(startIndex, endIndex);
+    }
+    
+    // For search results, show all products from API response
+    return data.products;
+  }, [data?.products, pageNumber, keyword]);
+
+  // Calculate total pages for home page
+  const totalPages = useMemo(() => {
+    if (!data?.products || keyword) return data?.pages || 1;
+    return Math.ceil(data.products.length / 8);
+  }, [data?.products, data?.pages, keyword]);
+
+  const currentPage = parseInt(pageNumber) || 1;
 
   // Handle loading state
   if (isLoading) {
@@ -161,48 +180,24 @@ const HomeScreen = () => {
             ))}
           </Grid>
 
-          {/* Show "View All Products" button if there are more than 8 products */}
-          {data.products.length > 8 && !keyword && (
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Button
-                component={Link}
-                to="/products"
-                variant="contained"
-                color="primary"
-                size="large"
-                sx={{
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  fontSize: '1.1rem',
-                  bgcolor: '#333',
-                  '&:hover': {
-                    bgcolor: '#555',
-                  },
-                }}
-              >
-                View All Products
-              </Button>
+          {/* Pagination Slider - Show when there are multiple pages */}
+          {totalPages > 1 && (
+            <Box 
+              sx={{ 
+                mt: 5, 
+                display: 'flex', 
+                justifyContent: 'center',
+                borderTop: '1px solid #e0e0e0',
+                pt: 4,
+              }}
+            >
+              <Paginate
+                pages={totalPages}
+                page={currentPage}
+                keyword={keyword || ''}
+              />
             </Box>
           )}
-
-          {/* Pagination - Always show */}
-          <Box 
-            sx={{ 
-              mt: 5, 
-              display: 'flex', 
-              justifyContent: 'center',
-              borderTop: '1px solid #e0e0e0',
-              pt: 4,
-            }}
-          >
-            <Paginate
-              pages={data.pages}
-              page={data.page}
-              keyword={keyword || ''}
-            />
-          </Box>
         </Container>
       </Box>
     </>

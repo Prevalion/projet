@@ -8,10 +8,14 @@ import Message from '../components/Message';
 import Paginate from '../components/Paginate';
 import ProductCarousel from '../components/ProductCarousel';
 import Meta from '../components/Meta';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 const HomeScreen = () => {
   const { pageNumber, keyword } = useParams();
+  
+  // Local state for grid pagination (separate from URL pagination)
+  const [currentGridPage, setCurrentGridPage] = useState(1);
+  const productsPerPage = 8;
 
   const { data, isLoading, error } = useGetProductsQuery({
     keyword,
@@ -34,30 +38,40 @@ const HomeScreen = () => {
     return productsCopy;
   }, [data?.products]);
 
-  // For home page, show 8 products per page in 2x4 grid
+  // For home page, paginate products locally
   const displayProducts = useMemo(() => {
     if (!data?.products) return [];
     
-    // If we're on home page (no keyword), paginate 8 products at a time
+    // If we're on home page (no keyword), use local pagination
     if (!keyword) {
-      const currentPage = parseInt(pageNumber) || 1;
-      const productsPerPage = 8;
-      const startIndex = (currentPage - 1) * productsPerPage;
+      const startIndex = (currentGridPage - 1) * productsPerPage;
       const endIndex = startIndex + productsPerPage;
       return data.products.slice(startIndex, endIndex);
     }
     
     // For search results, show all products from API response
     return data.products;
-  }, [data?.products, pageNumber, keyword]);
+  }, [data?.products, currentGridPage, keyword]);
 
   // Calculate total pages for home page
-  const totalPages = useMemo(() => {
+  const totalGridPages = useMemo(() => {
     if (!data?.products || keyword) return data?.pages || 1;
-    return Math.ceil(data.products.length / 8);
+    return Math.ceil(data.products.length / productsPerPage);
   }, [data?.products, data?.pages, keyword]);
 
-  const currentPage = parseInt(pageNumber) || 1;
+  // Handle grid page change (local state)
+  const handleGridPageChange = (page) => {
+    setCurrentGridPage(page);
+    // Smooth scroll to top of products section
+    document.querySelector('#products-section')?.scrollIntoView({ 
+      behavior: 'smooth' 
+    });
+  };
+
+  // Reset grid page when data changes
+  useMemo(() => {
+    setCurrentGridPage(1);
+  }, [data?.products]);
 
   // Handle loading state
   if (isLoading) {
@@ -144,7 +158,7 @@ const HomeScreen = () => {
       )}
 
       {/* Products Grid Section - 2x4 Layout */}
-      <Box sx={{ bgcolor: '#f5f5f5', py: 4 }}>
+      <Box id="products-section" sx={{ bgcolor: '#f5f5f5', py: 4 }}>
         <Container>
           <Typography
             variant="h4"
@@ -160,8 +174,22 @@ const HomeScreen = () => {
             {keyword ? `Search Results for "${keyword}"` : 'Latest Products'}
           </Typography>
 
+          {/* Page indicator for home page */}
+          {!keyword && totalGridPages > 1 && (
+            <Typography
+              variant="body2"
+              sx={{
+                mb: 3,
+                color: '#666',
+                textAlign: 'center',
+              }}
+            >
+              Page {currentGridPage} of {totalGridPages}
+            </Typography>
+          )}
+
           {/* 2x4 Grid Layout */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid container spacing={3} sx={{ mb: 4, minHeight: '400px' }}>
             {displayProducts.map((product) => (
               <Grid 
                 item 
@@ -180,8 +208,8 @@ const HomeScreen = () => {
             ))}
           </Grid>
 
-          {/* Pagination Slider - Show when there are multiple pages */}
-          {totalPages > 1 && (
+          {/* Local Pagination for Home Page */}
+          {!keyword && totalGridPages > 1 && (
             <Box 
               sx={{ 
                 mt: 5, 
@@ -192,9 +220,31 @@ const HomeScreen = () => {
               }}
             >
               <Paginate
-                pages={totalPages}
-                page={currentPage}
-                keyword={keyword || ''}
+                pages={totalGridPages}
+                page={currentGridPage}
+                keyword=""
+                onPageChange={handleGridPageChange}
+                isLocal={true}
+              />
+            </Box>
+          )}
+
+          {/* URL-based Pagination for Search Results */}
+          {keyword && data.pages > 1 && (
+            <Box 
+              sx={{ 
+                mt: 5, 
+                display: 'flex', 
+                justifyContent: 'center',
+                borderTop: '1px solid #e0e0e0',
+                pt: 4,
+              }}
+            >
+              <Paginate
+                pages={data.pages}
+                page={parseInt(pageNumber) || 1}
+                keyword={keyword}
+                isLocal={false}
               />
             </Box>
           )}

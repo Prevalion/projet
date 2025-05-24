@@ -20,7 +20,8 @@ import {
   InputBase,
   CircularProgress // Import CircularProgress
 } from '@mui/material';
-import { ShoppingCart, Person, Menu as MenuIcon } from '@mui/icons-material'; // Removed Assessment icon import
+import { ShoppingCart, Person, Menu as MenuIcon, Search as SearchIcon } from '@mui/icons-material'; // Added SearchIcon
+// Remove Assessment icon import
 // Remove useDispatch and resetCart if only used here for logout
 // import { useSelector, useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux'; // Keep for userInfo
@@ -238,13 +239,16 @@ const Header = () => {
               )}
             </Box>
           ) : (
-             // Mobile view - simplified cart icon logic
-             <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}> {/* Added flexGrow: 1 to allow SearchBox to take available space */}
-               {/* Add SearchBox here for mobile view */}
-               <Box sx={{ flexGrow: 1, mr: 1 }}> {/* Wrapper for SearchBox to allow it to expand */}
-                 <SearchBox />
-               </Box>
-               <IconButton component={Link} to="/cart" color="inherit" sx={{ ml: 'auto' }}>
+             // Mobile view - icons
+             <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}> {/* Use ml: 'auto' to push icons to the right */}
+               <IconButton
+                color="inherit"
+                // onClick={/* Define search action here, e.g., open a search modal or navigate to search page */}
+                aria-label="search products"
+               >
+                 <SearchIcon />
+               </IconButton>
+               <IconButton component={Link} to="/cart" color="inherit">
                  {userInfo && isLoadingCart ? (
                    <CircularProgress size={20} color="inherit" />
                  ) : (
@@ -266,12 +270,10 @@ const Header = () => {
           onClick={toggleDrawer(false)}
           onKeyDown={toggleDrawer(false)}
         >
-          {/* Remove SearchBox from here */}
-          {/* 
+          {/* Optional: You might want to keep SearchBox in the drawer or remove it based on your preference */}
           <Box sx={{ p: 2 }}>
             <SearchBox />
           </Box>
-          */}
           <List>
             {userInfo ? (
               <>

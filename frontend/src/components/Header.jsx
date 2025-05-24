@@ -285,6 +285,9 @@ const Header = () => {
                     <ListItem button component={Link} to="/admin/userlist">
                       <ListItemText primary="Users" />
                     </ListItem>
+                    <ListItem onClick={handleSystemStatsClick}>
+                      System Stats
+                    </ListItem>
                   </>
                 )}
                 <ListItem button onClick={logoutHandler}>

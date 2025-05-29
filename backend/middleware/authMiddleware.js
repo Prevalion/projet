@@ -38,11 +38,19 @@ const protect = asyncHandler(async (req, res, next) => {
     } catch (error) {
       console.error(error);
       res.status(401);
+<<<<<<< HEAD
       throw new Error('Please log in again');
     }
   } else {
     res.status(401);
     throw new Error('Please log in ');
+=======
+      throw new Error('Session expired, please login again');
+    }
+  } else {
+    res.status(401);
+    throw new Error('Please Login');
+>>>>>>> f66eaa7484288c9fac67cd5ddc3248c8fdfc5579
   }
 });
 

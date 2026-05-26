@@ -23,12 +23,12 @@
 1.  **Clone the repository:**
     ```bash
     git clone https://github.com/Prevalion/projet/
-    cd proj
+    cd projet
     ```
 
 2.  **Backend Setup:**
     * Navigate to the backend directory: `cd backend`
-    * Create a `.env` file in the `backend` root directory. Copy the contents of `.env.example` into it and fill in your actual values for:
+    * Create a `.env` file in the `backend` root directory and fill in your actual values for:
         * `NODE_ENV` (development or production)
         * `PORT` (e.g., 5000)
         * `MONGO_URI` (Your MongoDB connection string)
@@ -41,43 +41,39 @@
     * *(Optional)* Create a `.env` file in the `frontend` root if you want to override API URLs (see `src/constants.js`).
 
 4.  **Run the Application (Development):**
-    * From the **root `proj` directory**: `npm run dev`
+    * From the **root `projet` directory**: `npm run dev`
     * This uses `concurrently` (defined in the root `package.json`) to start both the backend server (with `nodemon`) and the frontend React development server.
 
 5.  **Seed Database (Optional):**
     * To import sample data (users, products):
         ```bash
-        # From the root proj directory
+        # From the root projet directory
         npm run data:import
         ```
     * To destroy all data:
         ```bash
-        # From the root proj directory
+        # From the root projet directory
         npm run data:destroy
         ```
 
 ## Available Scripts
 
-### Root Directory (`proj`)
+### Root Directory (`projet`)
 
 * `npm run dev`: Starts both backend and frontend servers concurrently for development.
 * `npm run data:import`: Seeds the database with sample data (runs backend seeder).
 * `npm run data:destroy`: Destroys all data in the database (runs backend seeder).
 
-### Backend Directory (`proj/backend`)
+### Backend Directory (`projet/backend`)
 
 * `npm start`: Starts the backend server (for production).
 * `npm run server`: Starts the backend server using `nodemon` (for development).
-* `npm run lint`: Lints backend code using ESLint.
-* `npm run format`: Formats backend code using Prettier.
 
-### Frontend Directory (`proj/frontend`)
+### Frontend Directory (`projet/frontend`)
 
 * `npm start`: Starts the frontend React development server.
 * `npm run build`: Builds the frontend application for production.
 * `npm test`: Runs frontend tests.
-* `npm run lint`: Lints frontend code using ESLint.
-* `npm run format`: Formats frontend code using Prettier.
 
 ## Environment Variables (Backend `.env`)
 
@@ -89,10 +85,7 @@
 
 ## Linting and Formatting
 
-This project uses ESLint and Prettier to maintain code quality and consistency.
+This project has ESLint and Prettier configured (`.prettierrc.yaml` at the root).
 
-* Run `npm run lint` in `backend` or `frontend` to check for linting errors.
-* Run `npm run format` in `backend` or `frontend` to automatically format code.
 * Consider installing ESLint and Prettier extensions in your code editor for real-time feedback and auto-formatting on save.
-* Husky and lint-staged are configured to automatically lint and format staged files before committing.
 
